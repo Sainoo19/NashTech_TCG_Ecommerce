@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using NashTech_TCG_API.Models;
+using System.Linq.Expressions;
 
 namespace NashTech_TCG_API.Repositories.Interfaces
 {
@@ -11,5 +12,7 @@ namespace NashTech_TCG_API.Repositories.Interfaces
         Task UpdateAsync(T entity);
         Task RemoveAsync(T entity);
         Task SaveChangesAsync();
+
+       
     }
 }

@@ -1,48 +1,146 @@
-﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
-}
-
+﻿/* General Link Styling */
 a {
-  color: #0077cc;
+    color: #0077cc;
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
+    a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+/* Buttons */
 .btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    .btn-primary:hover {
+        background-color: #155a99;
+        border-color: #134d82;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1b6ec2;
+    transition: color 0.3s ease;
 }
 
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+    .navbar-brand:hover {
+        color: #155a99;
+    }
+
+.nav-link {
+    font-size: 1rem;
+    color: #333;
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
+    .nav-link:hover {
+        color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+        border-radius: 5px;
+    }
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    transform: translateY(-10px);
+    opacity: 0;
+    display: block;
+    visibility: hidden;
+}
+
+.nav-item.dropdown:hover .dropdown-menu {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-item {
+    color: #333;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+    .dropdown-item:hover {
+        color: #007bff;
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+
+/* Footer */
+footer {
+    background-color: #f8f9fa;
+    padding: 30px 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+    footer h5 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: #1b6ec2;
+    }
+
+    footer a {
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+        footer a:hover {
+            color: #007bff;
+        }
+
+    footer .bi {
+        font-size: 1.5rem;
+        margin-right: 10px;
+        transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+        footer .bi:hover {
+            color: #007bff;
+            transform: scale(1.2);
+        }
+
+    footer p, footer small {
+        color: #6c757d;
+    }
+
+/* Search Bar */
+form.d-flex input[type="search"] {
+    border-radius: 20px;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    form.d-flex input[type="search"]:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+form.d-flex button {
+    border-radius: 20px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    form.d-flex button:hover {
+        background-color: #155a99;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+/* Box Shadow for Cards */
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
-}
-
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
-}
+    .box-shadow:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }

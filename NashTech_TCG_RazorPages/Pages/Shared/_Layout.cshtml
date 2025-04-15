@@ -1,5 +1,4 @@
-﻿<!-- NashTech_TCG_RazorPages/Pages/Shared/_Layout.cshtml -->
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,60 +9,103 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">NashTech TCG</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @User.Identity.Name!</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Account/Logout">Logout</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Account/Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Account/Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+        <nav class="bg-gray-100 border-b shadow-sm">
+            <div class="container mx-auto flex items-center justify-between p-4">
+                <!-- Logo -->
+                <a class="text-xl font-bold text-blue-600 flex items-center" asp-area="" asp-page="/Index">
+                    <img src="~/images/logo.png" alt="Logo" class="w-8 h-8 mr-2">
+                    NashTech TCG
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex space-x-4">
+                    <a class="text-gray-700 hover:text-blue-600" asp-area="" asp-page="/Index">Home</a>
+                    <a class="text-gray-700 hover:text-blue-600" asp-area="" asp-page="/Privacy">Privacy</a>
+                </div>
+
+                <!-- User Section -->
+                <div class="flex items-center space-x-4 relative">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="relative">
+                            <button class="text-gray-700 hover:text-blue-600 focus:outline-none" id="userDropdown">
+                                Hello, @User.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md hidden transition-all duration-200 z-50" id="dropdownMenu">
+                                <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" asp-area="" asp-page="/Account/Manage/Index">Manage Account</a>
+                                <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" asp-area="" asp-page="/Account/Logout">Logout</a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="text-gray-700 hover:text-blue-600" asp-area="" asp-page="/Account/Login">Login</a>
+                        <a class="text-gray-700 hover:text-blue-600" asp-area="" asp-page="/Account/Register">Register</a>
+                    }
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - NashTech TCG - <a asp-area="" asp-page="/Privacy">Privacy</a>
+    <footer class="bg-gray-100 border-t mt-8">
+        <div class="container mx-auto py-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- About Section -->
+            <div>
+                <h5 class="text-blue-600 font-bold">About Us</h5>
+                <p class="text-sm text-gray-600">NashTech TCG is your trusted platform for trading card games. Explore, trade, and connect with fellow enthusiasts.</p>
+            </div>
+            <!-- Quick Links -->
+            <div>
+                <h5 class="text-blue-600 font-bold">Quick Links</h5>
+                <ul class="space-y-2">
+                    <li><a class="text-gray-600 hover:text-blue-600" asp-area="" asp-page="/Index">Home</a></li>
+                    <li><a class="text-gray-600 hover:text-blue-600" asp-area="" asp-page="/Privacy">Privacy Policy</a></li>
+                    <li><a class="text-gray-600 hover:text-blue-600" asp-area="" asp-page="/Contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <!-- Social Media -->
+            <div class="text-right">
+                <h5 class="text-blue-600 font-bold">Follow Us</h5>
+                <div class="flex justify-end space-x-4">
+                    <a href="#" class="text-gray-600 hover:text-blue-600"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-sm text-gray-600 mt-4">
+            &copy; 2025 NashTech TCG. All rights reserved.
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownBtn = document.getElementById('userDropdown');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function (e) {
+                    e.stopPropagation(); // Đừng cho click này lan ra ngoài
+                    dropdownMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

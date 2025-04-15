@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NashTech_TCG_API.Models;
+using NashTech_TCG_API.Models.DTOs;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_ShareViewModels.ViewModels;
@@ -73,5 +74,22 @@ namespace NashTech_TCG_API.Services
 
             return await _userRepository.GetUserRolesAsync(user);
         }
+
+        public async Task<UserProfileViewModel> GetUserProfileAsync(string userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return null;
+
+            return new UserProfileViewModel
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Roles = await _userRepository.GetUserRolesAsync(user)
+            };
+        }
+
     }
 }

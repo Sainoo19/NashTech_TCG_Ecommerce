@@ -13,5 +13,7 @@ namespace NashTech_TCG_API.Repositories.Interfaces
         Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(ApplicationUser user);
         Task<IList<string>> GetUserRolesByIdAsync(string userId);
 
+        Task<ApplicationUser> GetByIdAsync(string userId);
+
     }
 }

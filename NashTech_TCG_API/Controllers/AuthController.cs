@@ -149,6 +149,38 @@ namespace NashTech_TCG_API.Controllers
                     "Roles retrieved successfully"));
 
         }
-       
+
+        [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [HttpGet("profile")]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var userId = User.FindFirstValue(Claims.Subject)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse(
+                    "User identifier not found in claims",
+                    (int)HttpStatusCode.BadRequest));
+            }
+
+            var profile = await _authService.GetUserProfileAsync(userId);
+            if (profile == null)
+            {
+                return NotFound(ApiResponse<object>.ErrorResponse(
+                    "User profile not found",
+                    (int)HttpStatusCode.NotFound));
+            }
+
+            return Ok(ApiResponse<UserProfileViewModel>.SuccessResponse(
+                profile,
+                "User profile retrieved successfully"));
+        }
+
+
     }
 }

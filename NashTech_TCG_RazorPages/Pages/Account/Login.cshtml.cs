@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NashTech_TCG_RazorPages.Services.Interfaces;
 using NashTech_TCG_ShareViewModels.ViewModels;
+using System.Security.Claims;
 
 namespace NashTech_TCG_RazorPages.Pages
 {
@@ -52,6 +53,9 @@ namespace NashTech_TCG_RazorPages.Pages
             // Store the token
             HttpContext.Session.SetString("AccessToken", token);
 
+            // Lấy thông tin profile của user
+            var userProfile = await _authService.GetUserProfileAsync(token);
+
             // Create claims identity from the token
             var claimsPrincipal = await _authService.ValidateTokenAsync(token);
             if (claimsPrincipal == null)
@@ -59,6 +63,29 @@ namespace NashTech_TCG_RazorPages.Pages
                 ErrorMessage = "Failed to validate token";
                 return Page();
             }
+
+            // Tạo một danh sách mới từ claims hiện có
+            var claims = claimsPrincipal.Claims.ToList();
+
+            // Thêm claims cho first name và last name từ profile
+            if (userProfile != null)
+            {
+                // Xóa claim name cũ nếu có
+                var existingNameClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+                if (existingNameClaim != null)
+                {
+                    claims.Remove(existingNameClaim);
+                }
+
+                // Thêm claims mới
+                claims.Add(new Claim(ClaimTypes.Name, userProfile.Email));
+                claims.Add(new Claim("FirstName", userProfile.FirstName ?? ""));
+                claims.Add(new Claim("LastName", userProfile.LastName ?? ""));
+            }
+
+            // Tạo claims identity và principal mới
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
 
             // Get user roles
             var roles = await _authService.GetUserRolesAsync(token);
@@ -70,7 +97,7 @@ namespace NashTech_TCG_RazorPages.Pages
 
             // Sign in the user
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                claimsPrincipal,
+                principal,
                 new AuthenticationProperties
                 {
                     IsPersistent = Input.RememberMe,
@@ -78,7 +105,10 @@ namespace NashTech_TCG_RazorPages.Pages
                 });
 
             SuccessMessage = "Login successful!";
+
             return LocalRedirect(returnUrl);
         }
+
+
     }
 }

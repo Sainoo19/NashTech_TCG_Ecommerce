@@ -144,5 +144,34 @@ namespace NashTech_TCG_RazorPages.Services
                 return new List<string>();
             }
         }
+
+        // Trong file: ../NashTech_TCG_RazorPages/Services/AuthService.cs
+        public async Task<UserProfileViewModel> GetUserProfileAsync(string token)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("API");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await client.GetAsync("api/Auth/profile");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ApiResponse<UserProfileViewModel>>(content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return result?.Data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user profile: {ex.Message}");
+                return null;
+            }
+        }
+
+
     }
 }

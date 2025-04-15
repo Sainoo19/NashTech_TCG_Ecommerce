@@ -9,5 +9,6 @@ namespace NashTech_TCG_RazorPages.Services.Interfaces
         Task<(bool Success, string Message)> RegisterAsync(RegisterViewModel model);
         Task<ClaimsPrincipal> ValidateTokenAsync(string token);
         Task<List<string>> GetUserRolesAsync(string token);
+        Task<UserProfileViewModel> GetUserProfileAsync(string token);
     }
 }
