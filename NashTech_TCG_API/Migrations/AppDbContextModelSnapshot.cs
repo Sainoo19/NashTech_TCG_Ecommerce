@@ -238,11 +238,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.Cart", b =>
                 {
-                    b.Property<int>("CartId")
+                    b.Property<string>("CartId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -260,20 +258,20 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.CartItem", b =>
                 {
-                    b.Property<int>("CartItemId")
+                    b.Property<string>("CartItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
-
-                    b.Property<int>("CartId")
-                        .HasColumnType("int");
+                    b.Property<string>("CartId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("VariantId")
-                        .HasColumnType("int");
+                    b.Property<string>("VariantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("CartItemId");
 
@@ -286,11 +284,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.Category", b =>
                 {
-                    b.Property<int>("CategoryId")
+                    b.Property<string>("CategoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -311,11 +307,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.Order", b =>
                 {
-                    b.Property<int>("OrderId")
+                    b.Property<string>("OrderId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
@@ -341,14 +335,13 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.OrderItem", b =>
                 {
-                    b.Property<int>("OrderItemId")
+                    b.Property<string>("OrderItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -356,8 +349,9 @@ namespace NashTech_TCG_API.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("VariantId")
-                        .HasColumnType("int");
+                    b.Property<string>("VariantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("OrderItemId");
 
@@ -370,14 +364,13 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.Product", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<string>("ProductId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                    b.Property<string>("CategoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -408,11 +401,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.ProductRating", b =>
                 {
-                    b.Property<int>("RatingId")
+                    b.Property<string>("RatingId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RatingId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Comment")
                         .HasMaxLength(500)
@@ -421,8 +412,9 @@ namespace NashTech_TCG_API.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
@@ -442,11 +434,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.ProductVariant", b =>
                 {
-                    b.Property<int>("VariantId")
+                    b.Property<string>("VariantId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VariantId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
@@ -455,11 +445,13 @@ namespace NashTech_TCG_API.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("RarityId")
-                        .HasColumnType("int");
+                    b.Property<string>("RarityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
@@ -476,11 +468,9 @@ namespace NashTech_TCG_API.Migrations
 
             modelBuilder.Entity("NashTech_TCG_API.Models.Rarity", b =>
                 {
-                    b.Property<int>("RarityId")
+                    b.Property<string>("RarityId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RarityId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(200)
@@ -497,6 +487,19 @@ namespace NashTech_TCG_API.Migrations
                         .IsUnique();
 
                     b.ToTable("Rarities");
+                });
+
+            modelBuilder.Entity("NashTech_TCG_API.Models.SequenceCounter", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SequenceCounters");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>

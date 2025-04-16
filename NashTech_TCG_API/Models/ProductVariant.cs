@@ -7,13 +7,13 @@ namespace NashTech_TCG_API.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int VariantId { get; set; }
+        public string VariantId { get; set; }
 
         [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        public string ProductId { get; set; }
 
         [ForeignKey("Rarity")]
-        public int RarityId { get; set; }
+        public string RarityId { get; set; }
 
         [Required(ErrorMessage = "Price is required")]
         [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]

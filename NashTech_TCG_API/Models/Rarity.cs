@@ -7,7 +7,7 @@ namespace NashTech_TCG_API.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int RarityId { get; set; }
+        public string RarityId { get; set; }
 
         [Required(ErrorMessage = "Rarity name is required")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Rarity name must be between 2 and 50 characters")]

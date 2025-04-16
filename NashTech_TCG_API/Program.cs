@@ -9,6 +9,7 @@ using NashTech_TCG_API.Repositories;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services;
 using NashTech_TCG_API.Services.Interfaces;
+using NashTech_TCG_API.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IdGenerator>();
+
 
 // Register the DataSeeder service
 builder.Services.AddScoped<DataSeeder>();

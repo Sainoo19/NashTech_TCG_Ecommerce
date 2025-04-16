@@ -95,6 +95,36 @@ namespace NashTech_TCG_API.Repositories
             return principal;
         }
 
+        // Helper method to determine claim destinations
+        public static IEnumerable<string> GetDestinations(Claim claim)
+        {
+            // Keep ID token claims private, except for:
+            // 1. Mandatory claims, which are added to both tokens
+            // 2. Claims explicitly meant for the access token
+
+            // Note: claims aren't automatically included in access tokens
+            switch (claim.Type)
+            {
+                case Claims.Name:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
+                    yield return OpenIddictConstants.Destinations.IdentityToken;
+                    yield break;
+
+                case Claims.Email:
+                case Claims.Role:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
+                    yield return OpenIddictConstants.Destinations.IdentityToken;
+                    yield break;
+
+                case "AspNet.Identity.SecurityStamp":
+                    yield break;
+
+                default:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
+                    yield break;
+            }
+        }
+
         public async Task<IList<string>> GetUserRolesByIdAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -103,6 +133,8 @@ namespace NashTech_TCG_API.Repositories
 
             return await _userManager.GetRolesAsync(user);
         }
+
+
 
     }
 }

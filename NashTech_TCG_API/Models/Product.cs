@@ -7,14 +7,14 @@ namespace NashTech_TCG_API.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ProductId { get; set; }
+        public string ProductId { get; set; }
 
         [Required(ErrorMessage = "Product name is required")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
         public string Name { get; set; } = string.Empty;
 
         [ForeignKey("Category")]
-        public int CategoryId { get; set; }
+        public string CategoryId { get; set; }
 
         public string? Description { get; set; }
 

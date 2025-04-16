@@ -7,13 +7,13 @@ namespace NashTech_TCG_API.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CartItemId { get; set; }
+        public string CartItemId { get; set; }
 
         [ForeignKey("Cart")]
-        public int CartId { get; set; }
+        public string CartId { get; set; }
 
         [ForeignKey("ProductVariant")]
-        public int VariantId { get; set; }
+        public string VariantId { get; set; }
 
         [Required(ErrorMessage = "Quantity is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1")]

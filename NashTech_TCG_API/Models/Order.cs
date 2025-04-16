@@ -7,7 +7,7 @@ namespace NashTech_TCG_API.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int OrderId { get; set; }
+        public string OrderId { get; set; }
 
         [ForeignKey("ApplicationUser")]
         public string UserId { get; set; } = null!;
