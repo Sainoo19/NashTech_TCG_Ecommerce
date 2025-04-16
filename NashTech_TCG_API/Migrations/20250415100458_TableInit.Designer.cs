@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NashTech_TCG_API.Data;
 
@@ -11,9 +12,11 @@ using NashTech_TCG_API.Data;
 namespace NashTech_TCG_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250415100458_TableInit")]
+    partial class TableInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,10 +220,6 @@ namespace NashTech_TCG_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -229,274 +228,7 @@ namespace NashTech_TCG_API.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("UserName")
-                        .IsUnique()
-                        .HasFilter("[UserName] IS NOT NULL");
-
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Cart", b =>
-                {
-                    b.Property<int>("CartId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartId"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("CartId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Carts");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.CartItem", b =>
-                {
-                    b.Property<int>("CartItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
-
-                    b.Property<int>("CartId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VariantId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CartItemId");
-
-                    b.HasIndex("CartId");
-
-                    b.HasIndex("VariantId");
-
-                    b.ToTable("CartItems");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("CategoryId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Order", b =>
-                {
-                    b.Property<int>("OrderId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("OrderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.OrderItem", b =>
-                {
-                    b.Property<int>("OrderItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("VariantId")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderItemId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("VariantId");
-
-                    b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Product", b =>
-                {
-                    b.Property<int>("ProductId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ProductId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("Name");
-
-                    b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.ProductRating", b =>
-                {
-                    b.Property<int>("RatingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RatingId"));
-
-                    b.Property<string>("Comment")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("RatingId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProductRatings");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.ProductVariant", b =>
-                {
-                    b.Property<int>("VariantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VariantId"));
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RarityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("VariantId");
-
-                    b.HasIndex("RarityId");
-
-                    b.HasIndex("ProductId", "RarityId")
-                        .IsUnique();
-
-                    b.ToTable("ProductVariants");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Rarity", b =>
-                {
-                    b.Property<int>("RarityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RarityId"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("RarityId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Rarities");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>
@@ -761,115 +493,6 @@ namespace NashTech_TCG_API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NashTech_TCG_API.Models.Cart", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.CartItem", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.Cart", "Cart")
-                        .WithMany("CartItems")
-                        .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NashTech_TCG_API.Models.ProductVariant", "ProductVariant")
-                        .WithMany("CartItems")
-                        .HasForeignKey("VariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cart");
-
-                    b.Navigation("ProductVariant");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Order", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.OrderItem", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.Order", "Order")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NashTech_TCG_API.Models.ProductVariant", "ProductVariant")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("VariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("ProductVariant");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Product", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.ProductRating", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.Product", "Product")
-                        .WithMany("ProductRatings")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NashTech_TCG_API.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.ProductVariant", b =>
-                {
-                    b.HasOne("NashTech_TCG_API.Models.Product", "Product")
-                        .WithMany("ProductVariants")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NashTech_TCG_API.Models.Rarity", "Rarity")
-                        .WithMany("ProductVariants")
-                        .HasForeignKey("RarityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Rarity");
-                });
-
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
                 {
                     b.HasOne("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", "Application")
@@ -892,40 +515,6 @@ namespace NashTech_TCG_API.Migrations
                     b.Navigation("Application");
 
                     b.Navigation("Authorization");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Cart", b =>
-                {
-                    b.Navigation("CartItems");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Category", b =>
-                {
-                    b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Order", b =>
-                {
-                    b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Product", b =>
-                {
-                    b.Navigation("ProductRatings");
-
-                    b.Navigation("ProductVariants");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.ProductVariant", b =>
-                {
-                    b.Navigation("CartItems");
-
-                    b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("NashTech_TCG_API.Models.Rarity", b =>
-                {
-                    b.Navigation("ProductVariants");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>

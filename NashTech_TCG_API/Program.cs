@@ -97,21 +97,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS to allow connections from the Razor Pages and React app
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins",
         builder =>
         {
             builder.WithOrigins(
-                "https://localhost:5001", // Razor Pages app
-                "https://localhost:5002"  // React admin app
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+                    "https://localhost:7075", // Razor Pages app
+                    "https://localhost:3000",  // React admin app with HTTPS
+                    "http://localhost:3000"    // React admin app with HTTP
+                )
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials(); // Important for cookies
         });
 });
+
+
 
 // Trong Program.cs, cập nhật phần AddSwaggerGen
 builder.Services.AddSwaggerGen(c =>
@@ -161,8 +163,12 @@ if (app.Environment.IsDevelopment())
     }
 }
 app.UseGlobalExceptionMiddleware();
-app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 
 // Authentication and Authorization middleware
 app.UseAuthentication();

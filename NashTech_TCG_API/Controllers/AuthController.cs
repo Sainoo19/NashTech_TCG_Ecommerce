@@ -11,6 +11,7 @@ using OpenIddict.Validation.AspNetCore;
 using System.Net;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Microsoft.AspNetCore.Authentication;
 
 namespace NashTech_TCG_API.Controllers
 {
@@ -66,7 +67,7 @@ namespace NashTech_TCG_API.Controllers
 
         [HttpPost("token")]
         [Produces("application/json")]
-        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)] // Token response is handled by OpenIddict
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
         [IgnoreAntiforgeryToken]
@@ -74,6 +75,8 @@ namespace NashTech_TCG_API.Controllers
         {
             try
             {
+
+
                 var request = HttpContext.GetOpenIddictServerRequest();
                 if (request == null)
                 {
@@ -92,7 +95,7 @@ namespace NashTech_TCG_API.Controllers
 
                     var principal = await _authService.CreateClaimsPrincipalAsync(user);
 
-                    // OpenIddict handles the token response format
+                    // Return token immediately without cookie
                     return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
@@ -100,11 +103,15 @@ namespace NashTech_TCG_API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Token error: {ex}");
                 return StatusCode(500, ApiResponse<object>.ErrorResponse(
                     $"Server error: {ex.Message}",
                     (int)HttpStatusCode.InternalServerError));
             }
         }
+
+
+
 
         [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpGet("roles")]
@@ -179,6 +186,22 @@ namespace NashTech_TCG_API.Controllers
             return Ok(ApiResponse<UserProfileViewModel>.SuccessResponse(
                 profile,
                 "User profile retrieved successfully"));
+        }
+
+        [HttpPost("logout")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        public IActionResult Logout()
+        {
+            // Clear auth cookie
+            Response.Cookies.Delete("auth_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Logged out successfully"));
         }
 
 

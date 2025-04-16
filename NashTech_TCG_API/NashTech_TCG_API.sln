@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NashTech_TCG_ShareViewModel
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NashTech_TCG_UnitTest", "..\NashTech_TCG_UnitTest\NashTech_TCG_UnitTest.csproj", "{A9A3EC36-785D-4FD8-A1C5-14F2A975E9C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NashTech_TCG_RazorPages", "..\NashTech_TCG_RazorPages\NashTech_TCG_RazorPages.csproj", "{A5854B24-DA6E-4E7B-9934-61F13BCC97E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NashTech_TCG_MVC", "..\NashTech_TCG_MVC\NashTech_TCG_MVC.csproj", "{2282D29A-7511-40F6-B599-1299A86CCB51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{A9A3EC36-785D-4FD8-A1C5-14F2A975E9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9A3EC36-785D-4FD8-A1C5-14F2A975E9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9A3EC36-785D-4FD8-A1C5-14F2A975E9C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5854B24-DA6E-4E7B-9934-61F13BCC97E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5854B24-DA6E-4E7B-9934-61F13BCC97E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5854B24-DA6E-4E7B-9934-61F13BCC97E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5854B24-DA6E-4E7B-9934-61F13BCC97E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2282D29A-7511-40F6-B599-1299A86CCB51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2282D29A-7511-40F6-B599-1299A86CCB51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2282D29A-7511-40F6-B599-1299A86CCB51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2282D29A-7511-40F6-B599-1299A86CCB51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

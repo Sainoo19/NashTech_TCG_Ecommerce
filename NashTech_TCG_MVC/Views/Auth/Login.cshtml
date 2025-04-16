@@ -1,0 +1,59 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Email">Email</label>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" type="password" />
+                        <label asp-for="Password">Password</label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" asp-for="RememberMe" />
+                        <label class="form-check-label" asp-for="RememberMe">Remember me</label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <p>
+                            <a asp-action="Register">Register as a new user</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
