@@ -90,8 +90,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IdGenerator>();
 
 
@@ -117,7 +120,7 @@ builder.Services.AddCors(options =>
                 .AllowCredentials(); // Important for cookies
         });
 });
-
+builder.Services.AddHttpContextAccessor();
 
 
 // Trong Program.cs, cập nhật phần AddSwaggerGen
@@ -173,6 +176,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+app.UseStaticFiles();
 
 
 // Authentication and Authorization middleware
