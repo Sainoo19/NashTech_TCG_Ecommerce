@@ -12,17 +12,20 @@ namespace NashTech_TCG_API.Services
         private readonly ICategoryRepository _categoryRepository;
         private readonly IdGenerator _idGenerator;
         private readonly ILogger<ProductService> _logger;
+        private readonly IFirebaseStorageService _firebaseStorage;
 
         public ProductService(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             IdGenerator idGenerator,
-            ILogger<ProductService> logger)
+            ILogger<ProductService> logger,
+            IFirebaseStorageService firebaseStorage)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _idGenerator = idGenerator;
             _logger = logger;
+            _firebaseStorage = firebaseStorage;
         }
 
         public async Task<ProductDTO> GetByIdAsync(string id)
@@ -67,6 +70,14 @@ namespace NashTech_TCG_API.Services
                     return null;
                 }
 
+                // Upload image to Firebase if provided
+                string imageUrl = null;
+                if (productDTO.ImageFile != null && productDTO.ImageFile.Length > 0)
+                {
+                    imageUrl = await _firebaseStorage.UploadFileAsync(productDTO.ImageFile, "products");
+                    _logger.LogInformation($"Image uploaded to Firebase: {imageUrl}");
+                }
+
                 // Generate a prefixed ID for the product (PROD001, PROD002, etc.)
                 string productId = await _idGenerator.GenerateId("PROD");
 
@@ -76,7 +87,7 @@ namespace NashTech_TCG_API.Services
                     Name = productDTO.Name,
                     CategoryId = productDTO.CategoryId,
                     Description = productDTO.Description,
-                    ImageUrl = productDTO.ImageUrl,
+                    ImageUrl = imageUrl,
                     CreatedDate = DateTime.UtcNow
                 };
 
@@ -110,10 +121,30 @@ namespace NashTech_TCG_API.Services
                 return null;
             }
 
+            // If a new image is uploaded, delete the old one and upload the new one
+            if (productDTO.ImageFile != null && productDTO.ImageFile.Length > 0)
+            {
+                // Delete old image if it exists
+                if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    await _firebaseStorage.DeleteFileAsync(product.ImageUrl);
+                }
+
+                // Upload new image
+                string newImageUrl = await _firebaseStorage.UploadFileAsync(productDTO.ImageFile, "products");
+                product.ImageUrl = newImageUrl;
+                _logger.LogInformation($"Image updated for product {id}. New URL: {newImageUrl}");
+            }
+            //// If no new image but a URL is provided in the DTO, use that
+            //else if (!string.IsNullOrEmpty(productDTO.ImageUrl))
+            //{
+            //    product.ImageUrl = productDTO.ImageUrl;
+            //}
+            //// Otherwise keep the existing image
+
             product.Name = productDTO.Name;
             product.CategoryId = productDTO.CategoryId;
             product.Description = productDTO.Description;
-            product.ImageUrl = productDTO.ImageUrl;
             product.UpdatedDate = DateTime.UtcNow;
 
             await _productRepository.UpdateAsync(product);
@@ -130,6 +161,13 @@ namespace NashTech_TCG_API.Services
             {
                 _logger.LogWarning($"Product not found: {id}");
                 return false;
+            }
+
+            // Delete the product image from Firebase if it exists
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                await _firebaseStorage.DeleteFileAsync(product.ImageUrl);
+                _logger.LogInformation($"Deleted image for product {id}");
             }
 
             await _productRepository.RemoveAsync(product);

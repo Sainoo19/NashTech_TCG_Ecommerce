@@ -26,8 +26,13 @@ namespace NashTech_TCG_API.Models.DTOs
 
         public string Description { get; set; }
 
-        [StringLength(500, ErrorMessage = "Image URL cannot exceed 500 characters")]
-        public string ImageUrl { get; set; }
+        // Remove original ImageUrl property
+        // [StringLength(500, ErrorMessage = "Image URL cannot exceed 500 characters")]
+        // public string ImageUrl { get; set; }
+
+        // Add file upload property
+        [Display(Name = "Product Image")]
+        public IFormFile ImageFile { get; set; }
     }
 
     public class UpdateProductDTO
@@ -41,8 +46,11 @@ namespace NashTech_TCG_API.Models.DTOs
 
         public string Description { get; set; }
 
-        [StringLength(500, ErrorMessage = "Image URL cannot exceed 500 characters")]
-        public string ImageUrl { get; set; }
+        
+
+        // Add file upload property
+        [Display(Name = "Product Image")]
+        public IFormFile ImageFile { get; set; }
     }
 
     public class ProductFilterDTO

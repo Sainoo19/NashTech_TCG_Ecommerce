@@ -86,7 +86,6 @@ namespace NashTech_TCG_API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateProduct([FromForm] CreateProductDTO productDTO)
         {
-            // Before proceeding, log the received values
             _logger.LogInformation($"Received CreateProduct request - Name: {productDTO.Name}, CategoryId: {productDTO.CategoryId}");
 
             try
@@ -106,6 +105,16 @@ namespace NashTech_TCG_API.Controllers
                     return BadRequest(ApiResponse<object>.ErrorResponse(errors));
                 }
 
+                // Log image file details if present
+                if (productDTO.ImageFile != null)
+                {
+                    _logger.LogInformation($"Image file received: {productDTO.ImageFile.FileName}, Size: {productDTO.ImageFile.Length} bytes");
+                }
+                else
+                {
+                    _logger.LogInformation("No image file received");
+                }
+
                 var createdProduct = await _productService.CreateProductAsync(productDTO);
 
                 if (createdProduct == null)
@@ -123,13 +132,11 @@ namespace NashTech_TCG_API.Controllers
             }
         }
 
-
         [HttpPut("{id}")]
-        [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-        [Consumes("multipart/form-data")] // Important for file uploads
+        //[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProduct(string id, [FromForm] UpdateProductDTO productDTO)
         {
-            // Rest of the method remains the same
             try
             {
                 if (!ModelState.IsValid)
@@ -140,6 +147,12 @@ namespace NashTech_TCG_API.Controllers
                         .ToList();
 
                     return BadRequest(ApiResponse<object>.ErrorResponse(errors));
+                }
+
+                // Log image file details if present
+                if (productDTO.ImageFile != null)
+                {
+                    _logger.LogInformation($"Image file received for update: {productDTO.ImageFile.FileName}, Size: {productDTO.ImageFile.Length} bytes");
                 }
 
                 var updatedProduct = await _productService.UpdateProductAsync(id, productDTO);
