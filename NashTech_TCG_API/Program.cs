@@ -95,6 +95,13 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IRarityRepository, RarityRepository>();
+builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+
+builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
+
 builder.Services.AddScoped<IdGenerator>();
 
 

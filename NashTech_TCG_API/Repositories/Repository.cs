@@ -16,12 +16,12 @@ namespace NashTech_TCG_API.Repositories
             _dbSet = dbContext.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(string id)
+        public virtual async Task<T> GetByIdAsync(string id)
         {
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
@@ -36,13 +36,13 @@ namespace NashTech_TCG_API.Repositories
             await _dbSet.AddAsync(entity);
         }
 
-        public Task UpdateAsync(T entity)
+        public virtual Task UpdateAsync(T entity)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask;
         }
 
-        public Task RemoveAsync(T entity)
+        public virtual Task RemoveAsync(T entity)
         {
             _dbSet.Remove(entity);
             return Task.CompletedTask;

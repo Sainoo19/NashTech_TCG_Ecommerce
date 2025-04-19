@@ -5,4 +5,11 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h3>Claims Debug:</h3>
+    <ul>
+        @foreach (var claim in User.Claims)
+        {
+            <li>@claim.Type : @claim.Value</li>
+        }
+    </ul>
 </div>
