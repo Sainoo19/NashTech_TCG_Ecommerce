@@ -123,5 +123,12 @@ namespace NashTech_TCG_API.Repositories
                 .Include(pv => pv.Rarity)
                 .FirstOrDefaultAsync(pv => pv.VariantId == id);
         }
+
+        public async Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(string productId)
+        {
+            return await _dbContext.ProductVariants
+                .Where(v => v.ProductId == productId)
+                .ToListAsync();
+        }
     }
 }

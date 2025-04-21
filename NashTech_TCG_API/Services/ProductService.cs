@@ -3,6 +3,7 @@ using NashTech_TCG_API.Models;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_ShareViewModels.ViewModels;
 
 namespace NashTech_TCG_API.Services
 {
@@ -10,6 +11,7 @@ namespace NashTech_TCG_API.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductVariantRepository _productVariantRepository;
         private readonly IdGenerator _idGenerator;
         private readonly ILogger<ProductService> _logger;
         private readonly IFirebaseStorageService _firebaseStorage;
@@ -17,12 +19,14 @@ namespace NashTech_TCG_API.Services
         public ProductService(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
+            IProductVariantRepository productVariantRepository,
             IdGenerator idGenerator,
             ILogger<ProductService> logger,
             IFirebaseStorageService firebaseStorage)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _productVariantRepository = productVariantRepository;
             _idGenerator = idGenerator;
             _logger = logger;
             _firebaseStorage = firebaseStorage;
@@ -196,6 +200,72 @@ namespace NashTech_TCG_API.Services
                 CreatedDate = product.CreatedDate,
                 UpdatedDate = product.UpdatedDate
             };
+        }
+
+        public async Task<(IEnumerable<ProductViewModel> Products, int TotalCount, int TotalPages)> GetPagedProductsForClientAsync(
+            int pageNumber,
+            int pageSize,
+            string categoryId = null,
+            string searchTerm = null,
+            string sortBy = null,
+            bool ascending = true)
+        {
+            try
+            {
+                // Get base products with pagination and filtering
+                var (products, totalCount) = await _productRepository.GetPagedProductsAsync(
+                    pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending);
+
+                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                // Transform products to view models and load price information
+                var productViewModels = new List<ProductViewModel>();
+
+                foreach (var product in products)
+                {
+                    // Ensure category is loaded
+                    if (product.Category == null)
+                    {
+                        product.Category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+                    }
+
+                    // Get all variants for this product to calculate price range
+                    var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+                    decimal? minPrice = null;
+                    decimal? maxPrice = null;
+
+                    // Only calculate min/max if variants exist
+                    if (variants.Any())
+                    {
+                        minPrice = variants.Min(v => v.Price);
+                        maxPrice = variants.Max(v => v.Price);
+                    }
+
+                    var viewModel = new ProductViewModel
+                    {
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        CategoryName = product.Category?.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        MinPrice = minPrice,
+                        MaxPrice = maxPrice,
+                        CreatedDate = product.CreatedDate
+                    };
+
+                    productViewModels.Add(viewModel);
+                }
+
+                _logger.LogInformation($"Retrieved {productViewModels.Count} products for client display");
+                return (productViewModels, totalCount, totalPages);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving products for client");
+                throw;
+            }
         }
     }
 }

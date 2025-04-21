@@ -1,4 +1,7 @@
 ﻿using NashTech_TCG_API.Models.DTOs;
+using NashTech_TCG_ShareViewModels.ViewModels;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NashTech_TCG_API.Services.Interfaces
 {
@@ -16,6 +19,14 @@ namespace NashTech_TCG_API.Services.Interfaces
         Task<ProductDTO> CreateProductAsync(CreateProductDTO productDTO);
         Task<ProductDTO> UpdateProductAsync(string id, UpdateProductDTO productDTO);
         Task<bool> DeleteProductAsync(string id);
-        
+
+        Task<(IEnumerable<ProductViewModel> Products, int TotalCount, int TotalPages)> GetPagedProductsForClientAsync(
+            int pageNumber,
+            int pageSize,
+            string categoryId = null,
+            string searchTerm = null,
+            string sortBy = null,
+            bool ascending = true);
+
     }
 }

@@ -14,4 +14,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Shared\PartialViews\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,78 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.PagedProductViewModel
+
+<!-- Product grid - 3 cards per row -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var product in Model.Products)
+    {
+        <div class="col">
+            <div class="card h-100 product-card">
+                <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="text-decoration-none">
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" class="card-img-top product-image" alt="@product.Name">
+                    }
+                    else
+                    {
+                        <img src="/images/placeholder.png" class="card-img-top product-image" alt="@product.Name">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate">@product.Name</h5>
+                        <p class="card-text text-truncate">@product.CategoryName</p>
+                        <p class="card-text fw-bold text-primary">@product.PriceRange</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Products.Any())
+{
+    <div class="alert alert-info mt-3">
+        No products found matching your criteria. Please try a different search.
+    </div>
+}
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new {
+                    pageNumber = Model.CurrentPage - 1,
+                    pageSize = Model.PageSize,
+                    categoryId = Model.CategoryId,
+                    searchTerm = Model.SearchTerm,
+                    sortBy = Model.SortBy,
+                    ascending = Model.Ascending
+                })">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new {
+                        pageNumber = i,
+                        pageSize = Model.PageSize,
+                        categoryId = Model.CategoryId,
+                        searchTerm = Model.SearchTerm,
+                        sortBy = Model.SortBy,
+                        ascending = Model.Ascending
+                    })">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new {
+                    pageNumber = Model.CurrentPage + 1,
+                    pageSize = Model.PageSize,
+                    categoryId = Model.CategoryId,
+                    searchTerm = Model.SearchTerm,
+                    sortBy = Model.SortBy,
+                    ascending = Model.Ascending
+                })">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

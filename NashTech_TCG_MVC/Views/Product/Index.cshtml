@@ -1,0 +1,172 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.PagedProductViewModel
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left sidebar - Filter/Search (3/10 width) -->
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Search & Filter</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm" method="get" action="@Url.Action("Index", "Product")">
+                        <!-- Search with debounce -->
+                        <div class="mb-3">
+                            <label for="searchTerm" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
+                                   value="@Model.SearchTerm" autocomplete="off">
+                        </div>
+
+                        <!-- Category filter with all categories -->
+                        <div class="mb-3">
+                            <label for="categoryId" class="form-label">Category</label>
+                            <select class="form-select" id="categoryId" name="categoryId">
+                                <option value="">All Categories</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var category in ViewBag.Categories)
+                                    {
+                                        <option value="@category.CategoryId" selected="@(Model.CategoryId == category.CategoryId)">
+                                            @category.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Sort options -->
+                        <div class="mb-3">
+                            <label for="sortBy" class="form-label">Sort By</label>
+                            <select class="form-select" id="sortBy" name="sortBy">
+                                <option value="name" selected="@(Model.SortBy == "name")">Name</option>
+                                <option value="date" selected="@(Model.SortBy == "date")">Date</option>
+                                <option value="price" selected="@(Model.SortBy == "price")">Price</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort direction -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ascending" name="ascending"
+                                       value="true" checked="@Model.Ascending">
+                                <label class="form-check-label" for="ascending">Ascending</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Apply All Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right content - Product cards (7/10 width) -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Products</h2>
+                <div>
+                    Showing @(((Model.CurrentPage - 1) * Model.PageSize) + 1) to
+                    @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) of @Model.TotalCount results
+                </div>
+            </div>
+
+            <div id="productGrid">
+                <!-- This will be updated by AJAX for search -->
+                @await Html.PartialAsync("_ProductGrid", Model)
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-image {
+        height: 200px;
+        object-fit: contain;
+        padding: 1rem;
+    }
+
+    .product-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+</style>
+
+@section Scripts {
+    <script>
+        // Debounce function to limit how often a function can be called
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        // Function to perform AJAX search
+        function performSearch() {
+            const searchTerm = $('#searchTerm').val();
+            const categoryId = $('#categoryId').val();
+            const sortBy = $('#sortBy').val();
+            const ascending = $('#ascending').is(':checked');
+
+            // Show loading indicator
+            $('#productGrid').html('<div class="text-center my-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+            // Make AJAX request
+            $.ajax({
+                url: '@Url.Action("Search", "Product")',
+                data: {
+                    searchTerm: searchTerm,
+                    categoryId: categoryId,
+                    sortBy: sortBy,
+                    ascending: ascending,
+                    pageNumber: 1,
+                    pageSize: @Model.PageSize
+                },
+                type: 'GET',
+                success: function(result) {
+                    $('#productGrid').html(result);
+                    // Update URL for better sharability without page reload
+                    const url = new URL(window.location);
+                    url.searchParams.set('searchTerm', searchTerm || '');
+                    url.searchParams.set('categoryId', categoryId || '');
+                    url.searchParams.set('sortBy', sortBy || 'name');
+                    url.searchParams.set('ascending', ascending);
+                    window.history.replaceState({}, '', url);
+                },
+                error: function() {
+                    $('#productGrid').html('<div class="alert alert-danger">Error loading products. Please try again.</div>');
+                }
+            });
+        }
+
+        // Debounced search function - will wait 500ms after typing stops
+        const debouncedSearch = debounce(performSearch, 500);
+
+        $(document).ready(function() {
+            // Add event listeners
+            $('#searchTerm').on('input', debouncedSearch);
+
+            // Category filter with immediate search
+            $('#categoryId').on('change', performSearch);
+
+            // Sort options with immediate search
+            $('#sortBy').on('change', performSearch);
+            $('#ascending').on('change', performSearch);
+
+            // Prevent form submission (we're handling via AJAX)
+            $('#filterForm').on('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+        });
+    </script>
+}

@@ -17,5 +17,6 @@ namespace NashTech_TCG_API.Repositories.Interfaces
             bool ascending = true);
 
         Task<ProductVariant> GetByProductAndRarityAsync(string productId, string rarityId);
+        Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(string productId);
     }
 }

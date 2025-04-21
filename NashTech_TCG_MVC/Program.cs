@@ -33,6 +33,7 @@ builder.Services.AddHttpClient("API", client =>
     client.BaseAddress = new Uri("https://localhost:7028/"); // Thay thế bằng URL API của bạn
 });
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 

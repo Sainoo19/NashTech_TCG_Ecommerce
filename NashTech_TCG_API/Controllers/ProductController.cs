@@ -5,6 +5,7 @@ using NashTech_TCG_API.Services.Interfaces;
 using OpenIddict.Validation.AspNetCore;
 using NashTech_TCG_API.Common;
 using NashTech_TCG_API.Services;
+using NashTech_TCG_ShareViewModels.ViewModels;
 
 namespace NashTech_TCG_API.Controllers
 {
@@ -189,6 +190,50 @@ namespace NashTech_TCG_API.Controllers
             }
         }
 
+        // New API endpoint for client-facing product display
+        [HttpGet("client")]
+        public async Task<IActionResult> GetProductsForClient(
+            [FromQuery] string categoryId = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 9,  // Default to 9 for 3x3 grid
+            [FromQuery] string searchTerm = null,
+            [FromQuery] string sortBy = null,
+            [FromQuery] bool ascending = true)
+        {
+            try
+            {
+                if (pageNumber < 1)
+                    pageNumber = 1;
+
+                if (pageSize < 1 || pageSize > 100)
+                    pageSize = 9;
+
+                var (products, totalCount, totalPages) = await _productService.GetPagedProductsForClientAsync(
+                    pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending);
+
+                var paginatedResult = new PagedProductViewModel
+                {
+                    Products = products,
+                    CurrentPage = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CategoryId = categoryId,
+                    SearchTerm = searchTerm,
+                    SortBy = sortBy,
+                    Ascending = ascending
+                };
+
+                return Ok(ApiResponse<PagedProductViewModel>.SuccessResponse(
+                    paginatedResult,
+                    "Products retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving products for client");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving products"));
+            }
+        }
 
 
     }
