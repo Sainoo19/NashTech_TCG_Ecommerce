@@ -4,6 +4,7 @@ using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
 using NashTech_TCG_ShareViewModels.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace NashTech_TCG_API.Services
 {
@@ -12,6 +13,8 @@ namespace NashTech_TCG_API.Services
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductVariantRepository _productVariantRepository;
+        private readonly IRarityRepository _rarityRepository; // Add this
+        private readonly IProductRatingRepository _productRatingRepository; // Add this
         private readonly IdGenerator _idGenerator;
         private readonly ILogger<ProductService> _logger;
         private readonly IFirebaseStorageService _firebaseStorage;
@@ -20,6 +23,8 @@ namespace NashTech_TCG_API.Services
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             IProductVariantRepository productVariantRepository,
+            IRarityRepository rarityRepository, // Add this
+            IProductRatingRepository productRatingRepository, // Add this
             IdGenerator idGenerator,
             ILogger<ProductService> logger,
             IFirebaseStorageService firebaseStorage)
@@ -27,6 +32,8 @@ namespace NashTech_TCG_API.Services
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _productVariantRepository = productVariantRepository;
+            _rarityRepository = rarityRepository; // Initialize this
+            _productRatingRepository = productRatingRepository; // Initialize this
             _idGenerator = idGenerator;
             _logger = logger;
             _firebaseStorage = firebaseStorage;
@@ -267,5 +274,242 @@ namespace NashTech_TCG_API.Services
                 throw;
             }
         }
+
+        // Update the GetProductDetailsAsync method
+        public async Task<ProductViewModel> GetProductDetailsAsync(string id)
+        {
+            try
+            {
+                // Get the product
+                var product = await _productRepository.GetByIdAsync(id);
+                if (product == null)
+                {
+                    _logger.LogWarning($"Product not found: {id}");
+                    return null;
+                }
+
+                // Ensure category is loaded
+                if (product.Category == null)
+                {
+                    product.Category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+                }
+
+                // Get all variants for this product
+                var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+                // Get all ratings for this product
+                var ratings = await _productRatingRepository.GetRatingsByProductIdAsync(id);
+
+                // Calculate average rating
+                double averageRating = 0;
+                if (ratings.Any())
+                {
+                    averageRating = ratings.Average(r => r.Rating);
+                }
+
+                // Calculate min/max price from variants
+                decimal? minPrice = null;
+                decimal? maxPrice = null;
+
+                // Only calculate min/max if variants exist
+                if (variants.Any())
+                {
+                    minPrice = variants.Min(v => v.Price);
+                    maxPrice = variants.Max(v => v.Price);
+                }
+
+                // Map variants to view model
+                var variantViewModels = new List<ProductVariantViewModel>();
+                foreach (var variant in variants)
+                {
+                    // Ensure rarity is loaded
+                    if (variant.Rarity == null)
+                    {
+                        variant.Rarity = await _rarityRepository.GetByIdAsync(variant.RarityId);
+                    }
+
+                    variantViewModels.Add(new ProductVariantViewModel
+                    {
+                        VariantId = variant.VariantId,
+                        ProductId = variant.ProductId,
+                        RarityId = variant.RarityId,
+                        RarityName = variant.Rarity?.Name ?? "Unknown",
+                        Price = variant.Price,
+                        StockQuantity = variant.StockQuantity,
+                        ImageUrl = variant.ImageUrl
+                    });
+                }
+
+                // Map ratings to view model
+                var ratingViewModels = ratings.Select(r => new ProductRatingViewModel
+                {
+                    RatingId = r.RatingId,
+                    ProductId = r.ProductId,
+                    UserId = r.UserId,
+                    UserName = $"{r.ApplicationUser.FirstName} {r.ApplicationUser.LastName}",
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedDate = r.CreatedDate
+                }).ToList();
+
+                // Create the final view model
+                var viewModel = new ProductViewModel
+                {
+                    ProductId = product.ProductId,
+                    Name = product.Name,
+                    CategoryId = product.CategoryId,
+                    CategoryName = product.Category?.Name,
+                    Description = product.Description,
+                    ImageUrl = product.ImageUrl,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice,
+                    CreatedDate = product.CreatedDate,
+                    Variants = variantViewModels,
+                    Ratings = ratingViewModels,
+                    AverageRating = Math.Round(averageRating, 1),
+                    RatingCount = ratings.Count()
+                };
+
+                _logger.LogInformation($"Retrieved product details for ID: {id}");
+                return viewModel;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving product details for ID: {id}");
+                throw;
+            }
+        }
+
+        public async Task<ProductRatingViewModel> AddProductRatingAsync(ProductRatingInputViewModel model, string userId)
+        {
+            try
+            {
+                // Validate that product exists
+                var product = await _productRepository.GetByIdAsync(model.ProductId);
+                if (product == null)
+                {
+                    _logger.LogWarning($"Product not found: {model.ProductId}");
+                    return null;
+                }
+
+                // Create new rating entity
+                var rating = new ProductRating
+                {
+                    ProductId = model.ProductId,
+                    UserId = userId,
+                    Rating = model.Rating,
+                    Comment = model.Comment,
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                // Add the rating via repository
+                await _productRatingRepository.AddAsync(rating);
+                await _productRatingRepository.SaveChangesAsync();
+
+                // Get user information
+                // Since we don't have a direct user repository, we'll need to get the user from the rating
+                var ratingWithUser = (await _productRatingRepository.GetRatingsByProductIdAsync(model.ProductId))
+                    .FirstOrDefault(r => r.RatingId == rating.RatingId);
+
+                if (ratingWithUser == null || ratingWithUser.ApplicationUser == null)
+                {
+                    _logger.LogWarning($"Failed to load user information for rating {rating.RatingId}");
+                }
+                
+                var ratingViewModel = new ProductRatingViewModel
+                {
+                    RatingId = rating.RatingId,
+                    ProductId = rating.ProductId,
+                    UserId = rating.UserId,
+                    UserName = ratingWithUser?.ApplicationUser != null ?
+                $"{ratingWithUser.ApplicationUser.FirstName} {ratingWithUser.ApplicationUser.LastName}" :
+                "Anonymous",
+                    Rating = rating.Rating,
+                    Comment = rating.Comment,
+                    CreatedDate = rating.CreatedDate
+                };
+
+                _logger.LogInformation($"Added new rating for product {model.ProductId} by user {userId}");
+                return ratingViewModel;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error adding rating for product {model.ProductId} by user {userId}");
+                throw;
+            }
+        }
+
+        // Update in ProductService.cs
+        public async Task<IEnumerable<ProductViewModel>> GetTopRatedProductsByCategoryAsync(string categoryId, int limit = 8)
+        {
+            try
+            {
+                // Validate the category exists
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    _logger.LogWarning($"Category not found: {categoryId}");
+                    return Enumerable.Empty<ProductViewModel>();
+                }
+
+                // Get top rated products from repository for this specific category
+                var products = await _productRepository.GetTopRatedProductsByCategoryAsync(categoryId, limit);
+
+                // Transform to view models
+                var productViewModels = new List<ProductViewModel>();
+
+                foreach (var product in products)
+                {
+                    // Get variants for price calculation
+                    var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+                    // Calculate min/max price
+                    decimal? minPrice = null;
+                    decimal? maxPrice = null;
+                    if (variants.Any())
+                    {
+                        minPrice = variants.Min(v => v.Price);
+                        maxPrice = variants.Max(v => v.Price);
+                    }
+
+                    // Calculate average rating
+                    double averageRating = 0;
+                    if (product.ProductRatings.Any())
+                    {
+                        averageRating = product.ProductRatings.Average(r => r.Rating);
+                    }
+
+                    var viewModel = new ProductViewModel
+                    {
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        CategoryName = category.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        MinPrice = minPrice,
+                        MaxPrice = maxPrice,
+                        CreatedDate = product.CreatedDate,
+                        AverageRating = Math.Round(averageRating, 1),
+                        RatingCount = product.ProductRatings.Count
+                    };
+
+                    productViewModels.Add(viewModel);
+                }
+
+                _logger.LogInformation($"Retrieved {productViewModels.Count} top rated products for category {categoryId}");
+                return productViewModels;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving top rated products for category {categoryId}");
+                throw;
+            }
+        }
+
+
+
+
+
     }
 }

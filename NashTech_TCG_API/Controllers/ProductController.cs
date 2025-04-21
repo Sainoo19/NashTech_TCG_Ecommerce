@@ -6,6 +6,9 @@ using OpenIddict.Validation.AspNetCore;
 using NashTech_TCG_API.Common;
 using NashTech_TCG_API.Services;
 using NashTech_TCG_ShareViewModels.ViewModels;
+using System.Security.Claims;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+using System.Net;
 
 namespace NashTech_TCG_API.Controllers
 {
@@ -232,6 +235,105 @@ namespace NashTech_TCG_API.Controllers
             {
                 _logger.LogError(ex, "Error retrieving products for client");
                 return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving products"));
+            }
+        }
+
+        // Add to ProductController.cs in the API project
+        [HttpGet("details/{id}")]
+        public async Task<IActionResult> GetProductDetails(string id)
+        {
+            try
+            {
+                var productDetails = await _productService.GetProductDetailsAsync(id);
+
+                if (productDetails == null)
+                    return NotFound(ApiResponse<object>.ErrorResponse($"Product with ID {id} not found", 404));
+
+                return Ok(ApiResponse<ProductViewModel>.SuccessResponse(productDetails, "Product details retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving product details {id}");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving product details"));
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [HttpPost("rating")]
+        [ProducesResponseType(typeof(ApiResponse<ProductRatingViewModel>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> AddRating([FromBody] ProductRatingInputViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return BadRequest(ApiResponse<object>.ErrorResponse(errors));
+                }
+
+
+                var userId = User.FindFirstValue(Claims.Subject)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest(ApiResponse<object>.ErrorResponse(
+                        "User identifier not found in claims",
+                        (int)HttpStatusCode.BadRequest));
+                }
+
+
+                // Add the rating
+                var rating = await _productService.AddProductRatingAsync(model, userId);
+                if (rating == null)
+                {
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Failed to add rating. Product might not exist."));
+                }
+
+                return CreatedAtAction(
+                    nameof(GetProductDetails),
+                    new { id = model.ProductId },
+                    ApiResponse<ProductRatingViewModel>.SuccessResponse(rating, "Rating added successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding product rating");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while adding the rating"));
+            }
+        }
+
+
+        [HttpGet("category/{categoryId}/top-rated")]
+        public async Task<IActionResult> GetTopRatedProductsByCategory(string categoryId,[FromQuery] int limit = 8)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(categoryId))
+                {
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Category ID is required"));
+                }
+
+                if (limit <= 0 || limit > 20) // Add reasonable limits
+                {
+                    limit = 8; // Default to 8 if invalid limit
+                }
+
+                var topRatedProducts = await _productService.GetTopRatedProductsByCategoryAsync(categoryId);
+
+                return Ok(ApiResponse<IEnumerable<ProductViewModel>>.SuccessResponse(
+                    topRatedProducts,
+                    $"Top {limit} rated products for category {categoryId} retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving top rated products for category {categoryId}");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving top rated products"));
             }
         }
 

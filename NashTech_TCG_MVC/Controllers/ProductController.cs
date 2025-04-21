@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NashTech_TCG_MVC.Services.Interfaces;
 using NashTech_TCG_ShareViewModels.ViewModels;
+using NashTech_TCG_MVC.Models.Responses;
 
 namespace NashTech_TCG_MVC.Controllers
 {
@@ -56,6 +57,7 @@ namespace NashTech_TCG_MVC.Controllers
             }
         }
 
+        // Update in MVC ProductController.cs
         public async Task<IActionResult> Details(string id)
         {
             try
@@ -65,7 +67,7 @@ namespace NashTech_TCG_MVC.Controllers
                     return BadRequest();
                 }
 
-                var (success, message, data) = await _productService.GetProductByIdAsync(id);
+                var (success, message, data) = await _productService.GetProductDetailsAsync(id);
 
                 if (success)
                 {
@@ -81,6 +83,8 @@ namespace NashTech_TCG_MVC.Controllers
                 return View("Error", "An error occurred while retrieving the product.");
             }
         }
+
+
 
         // Add action for AJAX search
         [HttpGet]
@@ -111,5 +115,45 @@ namespace NashTech_TCG_MVC.Controllers
                 return PartialView("_ErrorPartial", "An error occurred while searching products.");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddRating(ProductRatingInputViewModel model)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                // Redirect to login page with return URL to this product
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = model.ProductId }) });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Return to product details with error
+                TempData["ErrorMessage"] = "Please provide a valid rating.";
+                return RedirectToAction(nameof(Details), new { id = model.ProductId });
+            }
+
+            try
+            {
+                var (success, message, data) = await _productService.AddProductRatingAsync(model);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Your rating has been submitted successfully!";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = message;
+                }
+
+                return RedirectToAction(nameof(Details), new { id = model.ProductId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error adding rating for product {model.ProductId}");
+                TempData["ErrorMessage"] = "An error occurred while submitting your rating.";
+                return RedirectToAction(nameof(Details), new { id = model.ProductId });
+            }
+        }
+
     }
 }

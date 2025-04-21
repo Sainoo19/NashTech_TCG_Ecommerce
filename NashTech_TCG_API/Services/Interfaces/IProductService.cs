@@ -27,6 +27,10 @@ namespace NashTech_TCG_API.Services.Interfaces
             string searchTerm = null,
             string sortBy = null,
             bool ascending = true);
+        // Add to API IProductService.cs interface
+        Task<ProductViewModel> GetProductDetailsAsync(string id);
+        Task<ProductRatingViewModel> AddProductRatingAsync(ProductRatingInputViewModel model, string userId);
+        Task<IEnumerable<ProductViewModel>> GetTopRatedProductsByCategoryAsync(string categoryId, int limit = 8);
 
     }
 }

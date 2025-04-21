@@ -176,6 +176,105 @@ namespace NashTech_TCG_MVC.Services
             }
         }
 
+        // Add to MVC ProductService.cs
+        public async Task<(bool Success, string Message, ProductViewModel Data)> GetProductDetailsAsync(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return (false, "Product ID cannot be empty", null);
+                }
+
+                var client = _httpClientFactory.CreateClient("API");
+
+                // Add authorization token if available
+                var token = _httpContextAccessor.HttpContext.Session.GetString("AccessToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                _logger.LogInformation($"Requesting product details for ID: {id}");
+                var response = await client.GetAsync($"api/product/details/{id}");
+
+                var content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var apiResponse = JsonSerializer.Deserialize<ApiResponse<ProductViewModel>>(content, options);
+
+                    if (apiResponse.Success)
+                    {
+                        _logger.LogInformation($"Successfully retrieved product details: {apiResponse.Data?.Name}");
+                        return (true, "Product details retrieved successfully", apiResponse.Data);
+                    }
+
+                    _logger.LogWarning($"API returned error: {apiResponse.Message}");
+                    return (false, apiResponse.Message, null);
+                }
+
+                _logger.LogWarning($"API request failed with status {response.StatusCode}: {content}");
+                return (false, $"Failed to retrieve product details: {response.StatusCode}", null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving product details {id} from API");
+                return (false, $"An error occurred: {ex.Message}", null);
+            }
+        }
+
+        public async Task<(bool Success, string Message, ProductRatingViewModel Data)> AddProductRatingAsync(ProductRatingInputViewModel model)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("API");
+
+                // Add authorization token if available
+                var token = _httpContextAccessor.HttpContext.Session.GetString("AccessToken");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return (false, "You must be logged in to submit a rating", null);
+                }
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                // Serialize the model to JSON
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                // Send the POST request
+                _logger.LogInformation($"Submitting rating for product {model.ProductId}");
+                var response = await client.PostAsync("api/product/rating", content);
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var apiResponse = JsonSerializer.Deserialize<ApiResponse<ProductRatingViewModel>>(responseContent, options);
+
+                    if (apiResponse.Success)
+                    {
+                        _logger.LogInformation($"Successfully submitted rating for product {model.ProductId}");
+                        return (true, "Rating submitted successfully", apiResponse.Data);
+                    }
+
+                    _logger.LogWarning($"API returned error: {apiResponse.Message}");
+                    return (false, apiResponse.Message, null);
+                }
+
+                _logger.LogWarning($"API request failed with status {response.StatusCode}: {responseContent}");
+                return (false, $"Failed to submit rating: {response.StatusCode}", null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error submitting rating for product {model.ProductId}");
+                return (false, $"An error occurred: {ex.Message}", null);
+            }
+        }
+
+
+
 
     }
 }

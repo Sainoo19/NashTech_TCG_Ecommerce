@@ -83,5 +83,51 @@ namespace NashTech_TCG_API.Repositories
 
             return (products, totalCount);
         }
+
+
+        public async Task<IEnumerable<Product>> GetTopRatedProductsByCategoryAsync(string categoryId, int limit = 8)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(categoryId))
+                {
+                    throw new ArgumentException("Category ID is required", nameof(categoryId));
+                }
+
+                // Get products for this specific category with their ratings
+                var products = await _dbContext.Products
+                    .AsNoTracking()
+                    .Where(p => p.CategoryId == categoryId)
+                    .Include(p => p.Category)
+                    .Include(p => p.ProductRatings)
+                    .ToListAsync();
+
+                // Calculate average rating for each product and sort
+                var productsWithRating = products.Select(p => new
+                {
+                    Product = p,
+                    AverageRating = p.ProductRatings.Any() ? p.ProductRatings.Average(r => r.Rating) : 0,
+                    RatingCount = p.ProductRatings.Count
+                })
+                // First sort by average rating (descending)
+                .OrderByDescending(p => p.AverageRating)
+                // Then by number of ratings (descending) as tiebreaker for products with same rating
+                .ThenByDescending(p => p.RatingCount)
+                // Limit to requested number
+                .Take(limit)
+                .Select(p => p.Product)
+                .ToList();
+
+                return productsWithRating;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving top rated products for category {categoryId}", ex);
+            }
+        }
+
+
+
     }
 }

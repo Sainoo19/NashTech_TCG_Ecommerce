@@ -17,6 +17,34 @@ namespace NashTech_TCG_ShareViewModels.ViewModels
         public string PriceRange => MinPrice.HasValue && MaxPrice.HasValue ?
             (MinPrice == MaxPrice ? $"${MinPrice}" : $"${MinPrice} - ${MaxPrice}") : "N/A";
         public DateTime CreatedDate { get; set; }
+
+        // Product details specific properties
+        public IEnumerable<ProductVariantViewModel> Variants { get; set; }
+        public IEnumerable<ProductRatingViewModel> Ratings { get; set; }
+        public double AverageRating { get; set; }
+        public int RatingCount { get; set; }
+    }
+
+    public class ProductVariantViewModel
+    {
+        public string VariantId { get; set; }
+        public string ProductId { get; set; }
+        public string RarityId { get; set; }
+        public string RarityName { get; set; }
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public string ImageUrl { get; set; }
+    }
+
+    public class ProductRatingViewModel
+    {
+        public string RatingId { get; set; }
+        public string ProductId { get; set; }
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public int Rating { get; set; }
+        public string Comment { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 
     public class PagedProductViewModel

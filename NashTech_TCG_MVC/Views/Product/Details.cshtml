@@ -1,0 +1,433 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.ProductViewModel
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <!-- Product Image (Left side) -->
+        <div class="col-md-6">
+            <div class="card border-0">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="product-detail-image" alt="@Model.Name">
+                }
+                else
+                {
+                    <img src="/images/placeholder.png" class="product-detail-image" alt="@Model.Name">
+                }
+            </div>
+        </div>
+
+        <!-- Product Info (Right side) -->
+        <div class="col-md-6">
+            <h1 class="mb-2">@Model.Name</h1>
+            <p class="text-muted mb-3">Category: <a href="@Url.Action("Index", "Product", new { categoryId = Model.CategoryId })">@Model.CategoryName</a></p>
+
+            <div class="mb-3">
+                <div class="d-flex align-items-center">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Floor(Model.AverageRating))
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else if (i - 0.5 <= Model.AverageRating)
+                        {
+                            <i class="bi bi-star-half text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-warning"></i>
+                        }
+                    }
+                    <span class="ms-2">@Model.AverageRating.ToString("0.0") (@Model.RatingCount @(Model.RatingCount == 1 ? "review" : "reviews"))</span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 id="priceDisplay" class="fw-bold text-primary">@Model.PriceRange</h3>
+            </div>
+
+            @if (Model.Variants.Any())
+            {
+                <div class="mb-4">
+                    <label for="variantSelect" class="form-label fw-bold">Rarity:</label>
+                    <select class="form-select mb-3" id="variantSelect">
+                        <option value="">Select a rarity</option>
+                        @foreach (var variant in Model.Variants.OrderBy(v => v.Price))
+                        {
+                            <option value="@variant.VariantId"
+                                    data-price="@variant.Price.ToString("0.00")"
+                                    data-stock="@variant.StockQuantity">
+                                @variant.RarityName - $@variant.Price.ToString("0.00") (@(variant.StockQuantity > 0 ? $"{variant.StockQuantity} in stock" : "Out of stock"))
+                            </option>
+                        }
+                    </select>
+
+                    <div id="stockInfo" class="mb-3 d-none">
+                        <span id="stockDisplay" class="badge rounded-pill bg-success">In Stock</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="quantity" class="form-label fw-bold">Quantity:</label>
+                    <input type="number" class="form-control" id="quantity" min="1" max="10" value="1">
+                </div>
+
+                <div class="d-grid">
+                    <button type="button" id="addToCartBtn" class="btn btn-primary btn-lg">
+                        <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    This product is currently unavailable.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Product Description -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h3>Description</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p>@Model.Description</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No description available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Reviews -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Customer Reviews</h3>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button class="btn btn-outline-primary" id="writeReviewBtn">Write a Review</button>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })" class="btn btn-outline-primary">
+                            Login to Write a Review
+                        </a>
+                    }
+                </div>
+
+                <div class="card-body">
+                    @if (Model.Ratings != null && Model.Ratings.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="text-center mb-4">
+                                    <h2 class="display-4">@Model.AverageRating.ToString("0.0")</h2>
+                                    <div>
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= Math.Floor(Model.AverageRating))
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else if (i - 0.5 <= Model.AverageRating)
+                                            {
+                                                <i class="bi bi-star-half text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-warning"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <p class="text-muted">Based on @Model.RatingCount @(Model.RatingCount == 1 ? "review" : "reviews")</p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="rating-bars">
+                                    @for (int i = 5; i >= 1; i--)
+                                    {
+                                        int ratingCount = Model.Ratings.Count(r => r.Rating == i);
+                                        int percentage = Model.RatingCount > 0 ? (ratingCount * 100) / Model.RatingCount : 0;
+
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="me-2">@i <i class="bi bi-star-fill text-warning"></i></div>
+                                            <div class="progress flex-grow-1" style="height: 10px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%"></div>
+                                            </div>
+                                            <div class="ms-2">@ratingCount</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Individual Reviews -->
+                        @foreach (var rating in Model.Ratings)
+                        {
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between">
+                                    <h5>@rating.UserName</h5>
+                                    <small class="text-muted">@rating.CreatedDate.ToString("MMM dd, yyyy")</small>
+                                </div>
+                                <div>
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= rating.Rating)
+                                        {
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star text-warning"></i>
+                                        }
+                                    }
+                                </div>
+                                <p>@rating.Comment</p>
+                                <hr>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="mb-3">No reviews yet. Be the first to review this product!</p>
+                            <button class="btn btn-primary" id="firstReviewBtn">Write a Review</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    <input type="hidden" id="productId" value="@Model.ProductId">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi bi-star rating-star" data-rating="@i"></i>
+                            }
+                            <input type="hidden" id="ratingValue" name="Rating" value="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment</label>
+                        <textarea class="form-control" id="comment" name="Comment" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitReview">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-detail-image {
+        width: 100%;
+        height: 400px;
+        object-fit: contain;
+    }
+
+    .rating-star {
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+
+        .rating-star.active {
+            color: #ffc107;
+        }
+</style>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Handle variant selection
+            $("#variantSelect").change(function () {
+                const selectedOption = $(this).find("option:selected");
+                const variantId = $(this).val();
+
+                if (variantId) {
+                    // Update price display
+                    const price = selectedOption.data("price");
+                    $("#priceDisplay").text("$" + price);
+
+                    // Update stock display
+                    const stock = selectedOption.data("stock");
+                    $("#stockInfo").removeClass("d-none");
+
+                    if (stock > 0) {
+                        $("#stockDisplay")
+                            .removeClass("bg-danger")
+                            .addClass("bg-success")
+                            .text(`In Stock (${stock})`);
+                    } else {
+                        $("#stockDisplay")
+                            .removeClass("bg-success")
+                            .addClass("bg-danger")
+                            .text("Out of Stock");
+                    }
+
+                    // Set max quantity
+                    $("#quantity").attr("max", stock);
+                    if (parseInt($("#quantity").val()) > stock) {
+                        $("#quantity").val(stock);
+                    }
+                } else {
+                    // Reset to price range
+                    $("#priceDisplay").text("@Model.PriceRange");
+                    $("#stockInfo").addClass("d-none");
+                }
+            });
+
+            // Make sure Bootstrap 5 modal is properly initialized
+            // This is the fix for the review modal not showing up
+            let reviewModal;
+
+            function initModal() {
+                const modalElement = document.getElementById("reviewModal");
+                if (modalElement) {
+                    reviewModal = new bootstrap.Modal(modalElement);
+                    console.log("Modal initialized successfully");
+                } else {
+                    console.error("Modal element not found in DOM");
+                }
+            }
+
+            // Initialize modal when document is ready
+            initModal();
+
+            // Handle write review buttons
+            $("#writeReviewBtn, #firstReviewBtn").on("click", function(e) {
+                e.preventDefault();
+                console.log("Write review button clicked");
+                if (reviewModal) {
+                    reviewModal.show();
+                } else {
+                    console.error("Modal not initialized");
+                    // Try initializing again if it failed before
+                    initModal();
+                    if (reviewModal) reviewModal.show();
+                }
+            });
+
+            // Handle star rating selection
+            $(".rating-star").click(function() {
+                const rating = $(this).data("rating");
+                $("#ratingValue").val(rating);
+
+                // Update star appearance
+                $(".rating-star").removeClass("active");
+                $(".rating-star").removeClass("bi-star-fill").addClass("bi-star");
+
+                for (let i = 1; i <= rating; i++) {
+                    $(`.rating-star[data-rating="${i}"]`).addClass("active");
+                    $(`.rating-star[data-rating="${i}"]`).removeClass("bi-star").addClass("bi-star-fill");
+                }
+            });
+
+            // Handle add to cart button
+            $("#addToCartBtn").click(function() {
+                const variantId = $("#variantSelect").val();
+                const quantity = $("#quantity").val();
+
+                if (!variantId) {
+                    alert("Please select a variant");
+                    return;
+                }
+
+                if (quantity < 1) {
+                    alert("Please select a valid quantity");
+                    return;
+                }
+
+                // TODO: Implement add to cart functionality
+                alert(`Added to cart: Variant ${variantId}, Quantity: ${quantity}`);
+            });
+
+            // Handle review submission
+            $("#submitReview").click(function() {
+                const rating = $("#ratingValue").val();
+                const comment = $("#comment").val();
+                const productId = $("#productId").val();
+
+                if (rating < 1) {
+                    alert("Please select a rating");
+                    return;
+                }
+
+                // Submit the form via AJAX
+                $.ajax({
+                    url: '@Url.Action("AddRating", "Product")',
+                    type: 'POST',
+                    data: {
+                        ProductId: productId,
+                        Rating: rating,
+                        Comment: comment
+                    },
+                    success: function(result) {
+                        // Check if result is a redirect to login
+                        
+
+                        // Refresh the page to show the new rating
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        if (xhr.status === 401) {
+                            // Unauthorized - user not logged in
+                            alert("You must be logged in to submit a review. You will be redirected to the login page.");
+                            window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
+                        } else {
+                            alert("An error occurred while submitting your review: " + error);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
+

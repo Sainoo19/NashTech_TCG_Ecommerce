@@ -11,5 +11,6 @@ namespace NashTech_TCG_API.Repositories.Interfaces
             string searchTerm = null,
             string sortBy = null,
             bool ascending = true);
+        Task<Rarity> GetByIdAsync(string id);
     }
 }

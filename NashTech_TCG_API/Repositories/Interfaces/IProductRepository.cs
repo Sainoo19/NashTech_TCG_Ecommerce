@@ -11,5 +11,8 @@ namespace NashTech_TCG_API.Repositories.Interfaces
             string searchTerm = null,
             string sortBy = null,
             bool ascending = true);
+        
+        Task<IEnumerable<Product>> GetTopRatedProductsByCategoryAsync(string categoryId,int limit = 8);
+
     }
 }
