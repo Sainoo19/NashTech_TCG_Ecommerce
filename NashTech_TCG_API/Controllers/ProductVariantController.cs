@@ -84,7 +84,7 @@ namespace NashTech_TCG_API.Controllers
         }
 
         [HttpPost]
-        //[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CreateProductVariant([FromForm] CreateProductVariantDTO productVariantDTO)
         {
             try

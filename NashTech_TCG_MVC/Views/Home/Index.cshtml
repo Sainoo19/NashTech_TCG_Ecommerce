@@ -2,14 +2,234 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <h3>Claims Debug:</h3>
-    <ul>
-        @foreach (var claim in User.Claims)
-        {
-            <li>@claim.Type : @claim.Value</li>
-        }
-    </ul>
+<!-- Banner Slider with overlay text -->
+<div class="position-relative">
+    <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://picsum.photos/1200/400?random=1" class="d-block w-100" alt="Banner 1">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>Discover Trading Cards</h5>
+                    <p>Explore our collection of rare and valuable trading cards.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://picsum.photos/1200/400?random=2" class="d-block w-100" alt="Banner 2">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>Latest Releases</h5>
+                    <p>Check out the newest additions to our catalog.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://picsum.photos/1200/400?random=3" class="d-block w-100" alt="Banner 3">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>Special Deals</h5>
+                    <p>Limited time offers on selected items.</p>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <!-- Overlay text -->
+    <div class="position-absolute top-50 start-50 translate-middle text-center">
+        <h1 class="display-4 text-white text-shadow">Welcome Nashtech TCG</h1>
+    </div>
 </div>
+
+<!-- Featured Products by Category Section -->
+<div class="container mt-5">
+    <div class="featured-category-section">
+        <h2 class="section-title text-center mb-4">Featured Products by Category</h2>
+
+        <!-- Category Buttons -->
+        <div class="category-buttons-wrapper mb-4">
+            <div class="category-buttons">
+                @if (ViewBag.Categories != null)
+                {
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <button class="btn category-btn @(ViewBag.SelectedCategoryId == category.CategoryId ? "active" : "")"
+                                data-category-id="@category.CategoryId">
+                            @category.Name
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Products Slider -->
+        <div id="topProductsContainer" class="top-products-container">
+            @if (ViewBag.TopProducts != null)
+            {
+                <partial name="_TopProductsSlider" model="ViewBag.TopProducts" />
+            }
+            else
+            {
+                <div class="alert alert-info">Select a category to see top products</div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle category button click
+            $('.category-btn').on('click', function() {
+                const categoryId = $(this).data('category-id');
+
+                // Update active class
+                $('.category-btn').removeClass('active');
+                $(this).addClass('active');
+
+                // Show loading indicator
+                $('#topProductsContainer').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+                // Fetch top products for the selected category
+                $.ajax({
+                    url: '@Url.Action("GetTopProductsByCategory", "Home")',
+                    type: 'GET',
+                    data: { categoryId: categoryId },
+                    success: function(result) {
+                        $('#topProductsContainer').html(result);
+                        // Initialize the products slider
+                        initProductSlider();
+                    },
+                    error: function(error) {
+                        $('#topProductsContainer').html('<div class="alert alert-danger">Failed to load products</div>');
+                        console.error('Error loading products:', error);
+                    }
+                });
+            });
+
+            // Initialize product slider on page load
+            initProductSlider();
+        });
+
+        function initProductSlider() {
+            // Initialize the product slider if it exists
+            if ($('.product-slider').length) {
+                $('.product-slider').slick({
+                    slidesToShow: 4,
+                    slidesToScroll: 1,
+                    arrows: true,
+                    dots: false,
+                    infinite: false,
+                    responsive: [
+                        {
+                            breakpoint: 1200,
+                            settings: {
+                                slidesToShow: 3
+                            }
+                        },
+                        {
+                            breakpoint: 992,
+                            settings: {
+                                slidesToShow: 2
+                            }
+                        },
+                        {
+                            breakpoint: 576,
+                            settings: {
+                                slidesToShow: 1
+                            }
+                        }
+                    ]
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    /* Make the carousel container full width */
+    #bannerCarousel {
+        margin-left: calc(-1 * (100vw - 100%) / 2);
+        margin-right: calc(-1 * (100vw - 100%) / 2);
+        width: 100vw;
+        max-width: none;
+    }
+
+    /* Make the carousel images taller */
+    .carousel-item img {
+        height: 450px;
+        object-fit: cover;
+    }
+
+    /* Style for the welcome text */
+    .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        font-weight: bold;
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 10px 20px;
+        border-radius: 5px;
+    }
+
+    /* Category button styles */
+    .category-buttons-wrapper {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .category-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        min-width: min-content;
+    }
+
+    .category-btn {
+        white-space: nowrap;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #212529;
+        transition: all 0.3s ease;
+    }
+
+        .category-btn:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background-color: #4a47a3;
+            color: white;
+            border-color: #4a47a3;
+        }
+
+    /* Section styles */
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 30px;
+    }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 3px;
+            background-color: #4a47a3;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+    /* Products container */
+    .top-products-container {
+        min-height: 300px;
+    }
+</style>

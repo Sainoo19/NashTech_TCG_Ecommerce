@@ -1,0 +1,109 @@
+﻿@model IEnumerable<NashTech_TCG_ShareViewModels.ViewModels.ProductViewModel>
+
+<div class="top-products-slider">
+    <h3 class="category-name mb-3">@ViewBag.SelectedCategoryName Top Products</h3>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No products found for this category</div>
+    }
+    else
+    {
+        <div class="product-slider">
+            @foreach (var product in Model)
+            {
+                <div class="product-card-wrapper px-2">
+                    <div class="card h-100 product-card">
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="text-decoration-none">
+                            <div class="position-relative">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" class="card-img-top product-image" alt="@product.Name">
+                                }
+                                else
+                                {
+                                    <img src="/images/placeholder.png" class="card-img-top product-image" alt="No Image">
+                                }
+
+                                <!-- Rating badge -->
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-star-fill"></i> @product.AverageRating.ToString("0.0")
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">@product.Name</h5>
+                                <p class="card-text text-truncate">@product.CategoryName</p>
+                                @if (!string.IsNullOrEmpty(product.PriceRange))
+                                {
+                                    <p class="card-text fw-bold text-primary">@product.PriceRange</p>
+                                }
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    /* Product card styles matching Product Index */
+    .product-image {
+        height: 200px;
+        object-fit: contain;
+        padding: 1rem;
+    }
+
+    .product-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Slick slider customization */
+    .product-slider .slick-prev,
+    .product-slider .slick-next {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+    }
+
+    .product-slider .slick-prev {
+        left: -15px;
+    }
+
+    .product-slider .slick-next {
+        right: -15px;
+    }
+
+        .product-slider .slick-prev:before,
+        .product-slider .slick-next:before {
+            color: #4a47a3;
+            font-size: 24px;
+        }
+
+    .category-name {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+        .category-name:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background-color: #4a47a3;
+            bottom: -5px;
+            left: 0;
+        }
+</style>

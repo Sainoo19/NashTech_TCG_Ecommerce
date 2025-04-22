@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NashTech_TCG_API.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace NashTech_TCG_API.Models.DTOs
 {
@@ -25,7 +26,7 @@ namespace NashTech_TCG_API.Models.DTOs
             public string RarityId { get; set; }
 
             [Required(ErrorMessage = "Price is required")]
-            [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
+            [GreaterThanZero(ErrorMessage = "Price must be greater than 0")]
             public decimal Price { get; set; }
 
             [Required(ErrorMessage = "Stock quantity is required")]
@@ -39,7 +40,7 @@ namespace NashTech_TCG_API.Models.DTOs
         public class UpdateProductVariantDTO
         {
             [Required(ErrorMessage = "Price is required")]
-            [Range(0.01, 1000000, ErrorMessage = "Price must be between 0.01 and 1,000,000")]
+            [GreaterThanZero(ErrorMessage = "Price must be greater than 0")]
             public decimal Price { get; set; }
 
             [Required(ErrorMessage = "Stock quantity is required")]

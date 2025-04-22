@@ -8,54 +8,104 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/NashTech_TCG_MVC.styles.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add Slick Slider CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
+    @await RenderSectionAsync("Head", required: false)
+
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NashTech_TCG_MVC</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+    <header class="main-header shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-2">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="https://picsum.photos/40/40?random=2" alt="NashTech TCG Logo" class="logo me-2" onerror="this.src='https://via.placeholder.com/40x40?text=TCG';this.onerror='';">
+                   
+                </a>
+
+                <!-- Toggle Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Products</a>
-                        </li>
 
-                    </ul>
-                </div>
-                <!-- Phần đăng nhập/đăng ký -->
-                <div class="navbar-nav ml-auto">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Hello, @User.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value!
+                <!-- Navigation Links -->
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav mx-auto main-menu">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Home
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <a class="dropdown-item" asp-controller="Account" asp-action="Manage">Manage Account</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">Logout</a>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex">
-                            <a class="nav-link" asp-controller="Auth" asp-action="Login">Login</a>
-                            <a class="nav-link" asp-controller="Auth" asp-action="Register">Register</a>
-                        </div>
-                    }
-                </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">
+                                <i class="bi bi-grid"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-check"></i> Privacy
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-info-circle"></i> About Us
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-telephone"></i> Contact
+                            </a>
+                        </li>
+                    </ul>
 
+                    <!-- User Auth Section -->
+                    <div class="navbar-nav user-menu">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle user-dropdown" href="#" id="userDropdown"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    Hello, @User.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value!
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end user-dropdown-menu shadow" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Manage">
+                                        <i class="bi bi-gear-fill me-2"></i>Manage Account
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-cart-fill me-2"></i>My Orders
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-heart-fill me-2"></i>Wishlist
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                            <a class="nav-link ms-2" href="#">
+                                <i class="bi bi-cart3 position-relative fs-4">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                                </i>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="d-flex auth-buttons">
+                                <a class="btn btn-outline-light btn-sm me-2" asp-controller="Auth" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                </a>
+                                <a class="btn btn-light btn-sm" asp-controller="Auth" asp-action="Register">
+                                    <i class="bi bi-person-plus me-1"></i>Register
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -65,14 +115,279 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- Redesigned Footer -->
+    <footer class="main-footer bg-dark text-light py-5">
         <div class="container">
-            &copy; 2025 - NashTech_TCG_MVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="footer-heading">NashTech TCG</h5>
+                    <p class="footer-text">Your premier destination for trading card games. Discover rare cards, build your collection, and connect with other enthusiasts.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5 class="footer-heading">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a asp-area="" asp-controller="Product" asp-action="Index">Products</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <h5 class="footer-heading">Categories</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Pokémon</a></li>
+                        <li><a href="#">Magic: The Gathering</a></li>
+                        <li><a href="#">Yu-Gi-Oh!</a></li>
+                        <li><a href="#">Dragon Ball Super</a></li>
+                        <li><a href="#">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="footer-heading">Contact Us</h5>
+                    <address class="footer-contact">
+                        <p><i class="bi bi-geo-alt me-2"></i> 123 Card Street, Game City</p>
+                        <p><i class="bi bi-envelope me-2"></i> contact@nashtechTCG.com</p>
+                        <p><i class="bi bi-telephone me-2"></i> (123) 456-7890</p>
+                    </address>
+                    <div class="newsletter-form">
+                        <p class="small">Subscribe to our newsletter</p>
+                        <div class="input-group">
+                            <input type="email" class="form-control form-control-sm" placeholder="Email address">
+                            <button class="btn btn-primary btn-sm" type="button">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="footer-divider">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="copyright">&copy; @DateTime.Now.Year - NashTech TCG - All Rights Reserved</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="payment-methods">
+                        <i class="bi bi-credit-card me-2"></i>
+                        <i class="bi bi-paypal me-2"></i>
+                        <i class="bi bi-wallet2 me-2"></i>
+                        <i class="bi bi-bank me-2"></i>
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- Add Slick Slider JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @await RenderSectionAsync("ExtraScripts", required: false)
+
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        /* Header Styles */
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .navbar-dark.bg-primary {
+            background: linear-gradient(135deg, #4a47a3, #6a67ce) !important;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+            transition: transform 0.3s;
+        }
+
+        .navbar-brand:hover .logo {
+            transform: scale(1.05);
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Menu Styles */
+        .main-menu .nav-item {
+            position: relative;
+            margin: 0 5px;
+        }
+
+        .main-menu .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+            .main-menu .nav-link:hover,
+            .main-menu .nav-link:focus {
+                color: white;
+                background-color: rgba(255, 255, 255, 0.1);
+                transform: translateY(-2px);
+            }
+
+        /* User Menu Styles */
+        .user-dropdown {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 6px 15px;
+            transition: all 0.3s ease;
+        }
+
+            .user-dropdown:hover {
+                background-color: rgba(255, 255, 255, 0.25);
+            }
+
+        .user-dropdown-menu {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            transition: background-color 0.2s;
+        }
+
+            .dropdown-item:hover {
+                background-color: #f8f9fa;
+            }
+
+        .auth-buttons .btn {
+            border-radius: 20px;
+            padding: 0.375rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+            .auth-buttons .btn:hover {
+                transform: translateY(-2px);
+            }
+
+        /* Footer Styles */
+        .main-footer {
+            background: linear-gradient(135deg, #1a1a2e, #2a2a45);
+            margin-top: 3rem;
+        }
+
+        .footer-heading {
+            position: relative;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+        }
+
+            .footer-heading::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 50px;
+                height: 2px;
+                background-color: #6a67ce;
+            }
+
+        .footer-text {
+            color: #bbb;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding-left: 0;
+        }
+
+            .footer-links li {
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-links a {
+                color: #ccc;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                display: inline-block;
+            }
+
+                .footer-links a:hover {
+                    color: white;
+                    transform: translateX(3px);
+                }
+
+        .footer-contact p {
+            color: #bbb;
+            margin-bottom: 0.5rem;
+        }
+
+        .social-icons {
+            margin-top: 1.2rem;
+        }
+
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+            .social-icon:hover {
+                background-color: #6a67ce;
+                transform: translateY(-3px);
+                color: white;
+            }
+
+        .footer-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 2rem 0 1rem;
+        }
+
+        .copyright {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .newsletter-form {
+            margin-top: 1rem;
+        }
+
+        .payment-methods {
+            color: #999;
+            font-size: 1.2rem;
+        }
+    </style>
 </body>
 </html>
