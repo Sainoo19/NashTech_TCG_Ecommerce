@@ -284,150 +284,218 @@
         }
 </style>
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Handle variant selection
-            $("#variantSelect").change(function () {
-                const selectedOption = $(this).find("option:selected");
-                const variantId = $(this).val();
+   
+<script>
+    $(document).ready(function () {
+        // Handle variant selection
+        $("#variantSelect").change(function () {
+            const selectedOption = $(this).find("option:selected");
+            const variantId = $(this).val();
 
-                if (variantId) {
-                    // Update price display
-                    const price = selectedOption.data("price");
-                    $("#priceDisplay").text("$" + price);
+            if (variantId) {
+                // Update price display
+                const price = selectedOption.data("price");
+                $("#priceDisplay").text("$" + price);
 
-                    // Update stock display
-                    const stock = selectedOption.data("stock");
-                    $("#stockInfo").removeClass("d-none");
+                // Update stock display
+                const stock = selectedOption.data("stock");
+                $("#stockInfo").removeClass("d-none");
 
-                    if (stock > 0) {
-                        $("#stockDisplay")
-                            .removeClass("bg-danger")
-                            .addClass("bg-success")
-                            .text(`In Stock (${stock})`);
-                    } else {
-                        $("#stockDisplay")
-                            .removeClass("bg-success")
-                            .addClass("bg-danger")
-                            .text("Out of Stock");
-                    }
-
-                    // Set max quantity
-                    $("#quantity").attr("max", stock);
-                    if (parseInt($("#quantity").val()) > stock) {
-                        $("#quantity").val(stock);
-                    }
+                if (stock > 0) {
+                    $("#stockDisplay")
+                        .removeClass("bg-danger")
+                        .addClass("bg-success")
+                        .text(`In Stock (${stock})`);
                 } else {
-                    // Reset to price range
-                    $("#priceDisplay").text("@Model.PriceRange");
-                    $("#stockInfo").addClass("d-none");
+                    $("#stockDisplay")
+                        .removeClass("bg-success")
+                        .addClass("bg-danger")
+                        .text("Out of Stock");
                 }
-            });
 
-            // Make sure Bootstrap 5 modal is properly initialized
-            // This is the fix for the review modal not showing up
-            let reviewModal;
-
-            function initModal() {
-                const modalElement = document.getElementById("reviewModal");
-                if (modalElement) {
-                    reviewModal = new bootstrap.Modal(modalElement);
-                    console.log("Modal initialized successfully");
-                } else {
-                    console.error("Modal element not found in DOM");
+                // Set max quantity
+                $("#quantity").attr("max", stock);
+                if (parseInt($("#quantity").val()) > stock) {
+                    $("#quantity").val(stock);
                 }
+            } else {
+                // Reset to price range
+                $("#priceDisplay").text("@Model.PriceRange");
+                $("#stockInfo").addClass("d-none");
+            }
+        });
+
+        // Make sure Bootstrap 5 modal is properly initialized
+        let reviewModal;
+
+        function initModal() {
+            const modalElement = document.getElementById("reviewModal");
+            if (modalElement) {
+                reviewModal = new bootstrap.Modal(modalElement);
+                console.log("Modal initialized successfully");
+            } else {
+                console.error("Modal element not found in DOM");
+            }
+        }
+
+        // Initialize modal when document is ready
+        initModal();
+
+        // Handle write review buttons
+        $("#writeReviewBtn, #firstReviewBtn").on("click", function(e) {
+            e.preventDefault();
+            console.log("Write review button clicked");
+            if (reviewModal) {
+                reviewModal.show();
+            } else {
+                console.error("Modal not initialized");
+                initModal();
+                if (reviewModal) reviewModal.show();
+            }
+        });
+
+        // Handle star rating selection
+        $(".rating-star").click(function() {
+            const rating = $(this).data("rating");
+            $("#ratingValue").val(rating);
+
+            // Update star appearance
+            $(".rating-star").removeClass("active");
+            $(".rating-star").removeClass("bi-star-fill").addClass("bi-star");
+
+            for (let i = 1; i <= rating; i++) {
+                $(`.rating-star[data-rating="${i}"]`).addClass("active");
+                $(`.rating-star[data-rating="${i}"]`).removeClass("bi-star").addClass("bi-star-fill");
+            }
+        });
+
+        // Handle add to cart button - FIXED VERSION
+        $("#addToCartBtn").click(function() {
+            const variantId = $("#variantSelect").val();
+            const quantity = parseInt($("#quantity").val());
+            const productId = "@Model.ProductId"; // Add this to store product ID
+
+            if (!variantId) {
+                alert("Please select a variant");
+                return;
             }
 
-            // Initialize modal when document is ready
-            initModal();
+            if (isNaN(quantity) || quantity < 1) {
+                alert("Please select a valid quantity");
+                return;
+            }
 
-            // Handle write review buttons
-            $("#writeReviewBtn, #firstReviewBtn").on("click", function(e) {
-                e.preventDefault();
-                console.log("Write review button clicked");
-                if (reviewModal) {
-                    reviewModal.show();
-                } else {
-                    console.error("Modal not initialized");
-                    // Try initializing again if it failed before
-                    initModal();
-                    if (reviewModal) reviewModal.show();
-                }
-            });
+            // Make an AJAX call to add the item to cart
+            $.ajax({
+                url: '@Url.Action("AddToCart", "ShoppingCart")',
+                type: 'POST',
+                data: {
+                    VariantId: variantId,
+                    Quantity: quantity,
+                    ProductId: productId
+                },
+                success: function(result) {
+                    if (result.success) {
+                        // Show success message with Bootstrap toast
+                        const toast = `
+                            <div class="toast-container position-fixed top-0 end-0 p-3">
+                                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Item added to cart successfully!
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $('body').append(toast);
 
-            // Handle star rating selection
-            $(".rating-star").click(function() {
-                const rating = $(this).data("rating");
-                $("#ratingValue").val(rating);
+                        // Initialize and show the toast
+                        const toastEl = document.querySelector('.toast');
+                        const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                        bsToast.show();
 
-                // Update star appearance
-                $(".rating-star").removeClass("active");
-                $(".rating-star").removeClass("bi-star-fill").addClass("bi-star");
-
-                for (let i = 1; i <= rating; i++) {
-                    $(`.rating-star[data-rating="${i}"]`).addClass("active");
-                    $(`.rating-star[data-rating="${i}"]`).removeClass("bi-star").addClass("bi-star-fill");
-                }
-            });
-
-            // Handle add to cart button
-            $("#addToCartBtn").click(function() {
-                const variantId = $("#variantSelect").val();
-                const quantity = $("#quantity").val();
-
-                if (!variantId) {
-                    alert("Please select a variant");
-                    return;
-                }
-
-                if (quantity < 1) {
-                    alert("Please select a valid quantity");
-                    return;
-                }
-
-                // TODO: Implement add to cart functionality
-                alert(`Added to cart: Variant ${variantId}, Quantity: ${quantity}`);
-            });
-
-            // Handle review submission
-            $("#submitReview").click(function() {
-                const rating = $("#ratingValue").val();
-                const comment = $("#comment").val();
-                const productId = $("#productId").val();
-
-                if (rating < 1) {
-                    alert("Please select a rating");
-                    return;
-                }
-
-                // Submit the form via AJAX
-                $.ajax({
-                    url: '@Url.Action("AddRating", "Product")',
-                    type: 'POST',
-                    data: {
-                        ProductId: productId,
-                        Rating: rating,
-                        Comment: comment
-                    },
-                    success: function(result) {
-                        // Check if result is a redirect to login
-                        
-
-                        // Refresh the page to show the new rating
-                        location.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        if (xhr.status === 401) {
-                            // Unauthorized - user not logged in
-                            alert("You must be logged in to submit a review. You will be redirected to the login page.");
-                            window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
-                        } else {
-                            alert("An error occurred while submitting your review: " + error);
-                        }
+                        // Update cart count in navbar
+                        refreshCartCount();
+                    } else {
+                        alert(result.message || 'Failed to add item to cart.');
                     }
-                });
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        alert("You must be logged in to add items to cart.");
+                        window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
+                    } else {
+                        alert('An error occurred while adding the item to cart.');
+                    }
+                }
             });
         });
-    </script>
+
+        // Handle review submission
+        $("#submitReview").click(function() {
+            const rating = $("#ratingValue").val();
+            const comment = $("#comment").val();
+            const productId = $("#productId").val();
+
+            if (rating < 1) {
+                alert("Please select a rating");
+                return;
+            }
+
+            // Submit the form via AJAX
+            $.ajax({
+                url: '@Url.Action("AddRating", "Product")',
+                type: 'POST',
+                data: {
+                    ProductId: productId,
+                    Rating: rating,
+                    Comment: comment
+                },
+                success: function(result) {
+                    // Refresh the page to show the new rating
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    if (xhr.status === 401) {
+                        // Unauthorized - user not logged in
+                        alert("You must be logged in to submit a review. You will be redirected to the login page.");
+                        window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
+                    } else {
+                        alert("An error occurred while submitting your review: " + error);
+                    }
+                }
+            });
+        });
+
+        // Function to refresh the cart count
+        function refreshCartCount() {
+            $.ajax({
+                url: '@Url.Action("GetCartCount", "ShoppingCart")',
+                type: 'GET',
+                success: function(result) {
+                    if (result.success) {
+                        $('#cart-count').text(result.count);
+                        // Make the badge visible if there are items
+                        if (result.count > 0) {
+                            $('#cart-count').show();
+                        } else {
+                            $('#cart-count').hide();
+                        }
+                    }
+                },
+                error: function() {
+                    console.error("Failed to update cart count");
+                }
+            });
+        }
+
+        // Initial load of cart count
+        refreshCartCount();
+    });
+</script>
+
 }
 

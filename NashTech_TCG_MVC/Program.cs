@@ -35,7 +35,7 @@ builder.Services.AddHttpClient("API", client =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
-
+builder.Services.AddScoped<ICartService, CartService>();
 var app = builder.Build();
 
 // Cấu hình pipeline request

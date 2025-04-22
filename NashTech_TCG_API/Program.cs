@@ -102,6 +102,9 @@ builder.Services.AddScoped<IProductRatingRepository, ProductRatingRepository>();
 builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
 builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
 builder.Services.AddScoped<IRarityService, RarityService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartService, CartService>();
+
 builder.Services.AddScoped<IdGenerator>();
 
 

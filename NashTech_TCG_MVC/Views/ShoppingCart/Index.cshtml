@@ -1,0 +1,289 @@
+﻿<!-- Index.cshtml in Views/ShoppingCart/ -->
+@model NashTech_TCG_ShareViewModels.ViewModels.CartViewModel
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Shopping Cart</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.Items.Any())
+    {
+        <div class="row">
+            <div class="col-lg-9">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Cart Items (@Model.TotalItems)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-50">Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr id="cart-item-@item.CartItemId">
+                                            <td>
+                                                <div class="d-flex">
+                                                    @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                                    {
+                                                        <img src="@item.ProductImageUrl" alt="@item.ProductName" class="cart-thumbnail me-3">
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="/images/placeholder.png" alt="@item.ProductName" class="cart-thumbnail me-3">
+                                                    }
+                                                    <div>
+                                                        <h5 class="mb-0">
+                                                            <a href="@Url.Action("Details", "Product", new { id = item.ProductId })" class="text-decoration-none">@item.ProductName</a>
+                                                        </h5>
+                                                        <p class="text-muted mb-0">@item.RarityName</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$@item.Price.ToString("0.00")</td>
+                                            <td>
+                                                <form class="update-cart-form d-flex align-items-center" data-cartitemid="@item.CartItemId">
+                                                    <input type="hidden" name="CartItemId" value="@item.CartItemId" />
+                                                    <div class="input-group" style="width: 120px;">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm quantity-btn" data-action="decrease">-</button>
+                                                        <input type="number" class="form-control quantity-input text-center" name="Quantity" value="@item.Quantity" min="1" max="@item.StockQuantity" aria-label="Quantity" />
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm quantity-btn" data-action="increase">+</button>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                            <td class="subtotal">$@item.Subtotal.ToString("0.00")</td>
+                                            <td>
+                                                <form asp-action="RemoveCartItem" asp-controller="ShoppingCart" method="post" class="d-inline remove-item-form" data-cartitemid="@item.CartItemId">
+                                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <form asp-action="ClearCart" asp-controller="ShoppingCart" method="post" class="d-inline clear-cart-form">
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i class="bi bi-trash me-2"></i>Clear Cart
+                                </button>
+                            </form>
+                            <a href="@Url.Action("Index", "Product")" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold">$@Model.TotalPrice.ToString("0.00")</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="fw-bold">Total:</span>
+                            <span class="fw-bold fs-5 text-primary">$@Model.TotalPrice.ToString("0.00")</span>
+                        </div>
+                        <a href="#" class="btn btn-primary w-100">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
+                <h3>Your shopping cart is empty</h3>
+                <p class="text-muted">Browse our products and start adding items to your cart.</p>
+                <a href="@Url.Action("Index", "Product")" class="btn btn-primary mt-3">
+                    <i class="bi bi-shop me-2"></i>Browse Products
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .cart-thumbnail {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Update quantity with plus/minus buttons
+            $('.quantity-btn').click(function () {
+                const action = $(this).data('action');
+                const input = $(this).siblings('.quantity-input');
+                const currentValue = parseInt(input.val());
+
+                if (action === 'increase') {
+                    const max = parseInt(input.attr('max'));
+                    if (currentValue < max) {
+                        input.val(currentValue + 1);
+                    }
+                } else {
+                    if (currentValue > 1) {
+                        input.val(currentValue - 1);
+                    }
+                }
+
+                // Trigger change event to update quantities
+                input.trigger('change');
+            });
+
+            // Handle quantity input changes
+            $('.quantity-input').change(function () {
+                const form = $(this).closest('form');
+                const cartItemId = form.data('cartitemid');
+                const quantity = parseInt($(this).val());
+
+                $.ajax({
+                    url: '@Url.Action("UpdateCartItem", "ShoppingCart")',
+                    type: 'POST',
+                    data: {
+                        CartItemId: cartItemId,
+                        Quantity: quantity
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            // Update the price display
+                            const row = $(`#cart-item-${cartItemId}`);
+                            const subtotal = (result.item.price * result.item.quantity).toFixed(2);
+                            row.find('.subtotal').text('$' + subtotal);
+
+                            // Update the total price and item count
+                            updateOrderSummary();
+                        } else {
+                            alert(result.message || 'Failed to update cart item.');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while updating the cart.');
+                    }
+                });
+            });
+
+            // Handle remove item
+            $('.remove-item-form').submit(function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const cartItemId = form.data('cartitemid');
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (result) {
+                        if (result.success) {
+                            // Remove the row from the table
+                            $(`#cart-item-${cartItemId}`).remove();
+
+                            // Update the total price and item count
+                            updateOrderSummary();
+
+                            // If cart is empty, reload the page to show empty cart message
+                            if ($('table tbody tr').length === 0) {
+                                location.reload();
+                            }
+                        } else {
+                            alert(result.message || 'Failed to remove cart item.');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while removing the item.');
+                    }
+                });
+            });
+
+            // Handle clear cart
+            $('.clear-cart-form').submit(function (e) {
+                e.preventDefault();
+
+                if (!confirm('Are you sure you want to clear your cart?')) {
+                    return;
+                }
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    success: function (result) {
+                        if (result.success) {
+                            // Reload the page to show empty cart message
+                            location.reload();
+                        } else {
+                            alert(result.message || 'Failed to clear cart.');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while clearing the cart.');
+                    }
+                });
+            });
+
+            function updateOrderSummary() {
+                let totalPrice = 0;
+                let totalItems = 0;
+
+                // Sum up all subtotals
+                $('table tbody tr').each(function () {
+                    const subtotalText = $(this).find('.subtotal').text().substring(1);
+                    const subtotal = parseFloat(subtotalText);
+                    const quantity = parseInt($(this).find('.quantity-input').val());
+
+                    totalPrice += subtotal;
+                    totalItems += quantity;
+                });
+
+                // Update the order summary
+                $('.card-body .fw-bold.fs-5.text-primary').text('$' + totalPrice.toFixed(2));
+                $('.card-body .fw-bold:not(.fs-5)').text('$' + totalPrice.toFixed(2));
+                $('.card-header h5').text(`Cart Items (${totalItems})`);
+            }
+        });
+    </script>
+}

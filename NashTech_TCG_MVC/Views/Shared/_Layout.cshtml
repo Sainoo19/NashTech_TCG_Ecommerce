@@ -87,11 +87,14 @@
                                     </a>
                                 </div>
                             </div>
-                            <a class="nav-link ms-2" href="#">
-                                <i class="bi bi-cart3 position-relative fs-4">
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-                                </i>
-                            </a>
+                            
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ShoppingCart" asp-action="Index">
+                                    <i class="bi bi-cart3"></i>
+                                    <span id="cart-count" class="badge rounded-pill bg-danger">0</span>
+                                </a>
+                            </li>
+
                         }
                         else
                         {
@@ -389,5 +392,35 @@
             font-size: 1.2rem;
         }
     </style>
+    <!-- Add this script at the end of _Layout.cshtml before the closing </body> tag -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script>
+            $(document).ready(function() {
+                // Function to load cart count on page load
+                function loadCartCount() {
+                    $.ajax({
+                        url: '@Url.Action("GetCartCount", "ShoppingCart")',
+                        type: 'GET',
+                        success: function(result) {
+                            if (result.success) {
+                                $('#cart-count').text(result.count);
+                                // Make the badge visible if there are items
+                                if (result.count > 0) {
+                                    $('#cart-count').show();
+                                } else {
+                                    $('#cart-count').hide();
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Call the function on page load
+                loadCartCount();
+            });
+        </script>
+    }
+
 </body>
 </html>
