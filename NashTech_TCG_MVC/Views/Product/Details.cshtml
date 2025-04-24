@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = Model.Name;
+    var formatPrice = ViewBag.FormatPrice as Func<decimal, string> ?? (price => price.ToString("N0"));
 }
 
 <!-- Toast container for notifications -->
@@ -49,41 +50,38 @@
 <div class="container mt-3">
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
         <div class="row g-0">
-            <!-- Modify the product image section (around line 68) -->
-            <div class="col-lg-6 product-gallery position-relative bg-light">
+            <!-- Product Image Section -->
+            <div class="col-lg-6 bg-light position-relative">
+                
                 <div class="position-absolute top-0 end-0 m-3">
                     <span class="badge bg-primary p-2 rounded-pill">
                         <i class="bi bi-award-fill me-1"></i>TCG Exclusive
                     </span>
                 </div>
 
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <div class="product-image-container d-flex align-items-center justify-content-center h-100">
-                        <img src="@Model.ImageUrl" class="product-detail-image img-fluid" id="mainProductImage" alt="@Model.Name"
-                             data-bs-toggle="modal" data-bs-target="#imageModal">
-                    </div>
-                }
-                else
-                {
-                    <div class="product-image-container d-flex align-items-center justify-content-center h-100">
-                        <img src="/images/placeholder.png" class="product-detail-image img-fluid" alt="@Model.Name"
-                             data-bs-toggle="modal" data-bs-target="#imageModal">
-                    </div>
-                }
+                <div class="d-flex align-items-center justify-content-center h-100 p-4">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="img-fluid" style="max-height: 400px; cursor: pointer;"
+                             alt="@Model.Name" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    }
+                    else
+                    {
+                        <img src="/images/placeholder.png" class="img-fluid" style="max-height: 400px; cursor: pointer;"
+                             alt="@Model.Name" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    }
+                </div>
             </div>
 
 
-            <!-- Product Info (Right side) -->
+            <!-- Product Info Section -->
             <div class="col-lg-6">
-                <div class="card-body product-details p-lg-5 p-4">
+                <div class="p-4 p-lg-5">
                     <div class="d-flex justify-content-between align-items-start">
                         <h1 class="fw-bold mb-2">@Model.Name</h1>
-                        <div class="wishlist-btn">
-                            <button class="btn btn-outline-danger btn-sm rounded-circle" title="Add to wishlist">
-                                <i class="bi bi-heart"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-outline-danger btn-sm rounded-circle" title="Add to wishlist">
+                            <i class="bi bi-heart"></i>
+                        </button>
                     </div>
 
                     <div class="d-flex align-items-center mb-3">
@@ -95,7 +93,7 @@
                         </span>
                     </div>
 
-                    <div class="product-rating mb-4">
+                    <div class="mb-4">
                         <div class="d-flex align-items-center">
                             @for (int i = 1; i <= 5; i++)
                             {
@@ -118,8 +116,8 @@
                         </div>
                     </div>
 
-                    <div class="price-section p-3 rounded-3 bg-light mb-4">
-                        <h3 id="priceDisplay" class="fw-bold text-primary mb-0">@Model.PriceRange</h3>
+                    <div class="p-3 rounded-3 bg-light mb-4">
+                        <h3 id="priceDisplay" class="fw-bold text-primary mb-0">@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")</h3>
                     </div>
 
                     @if (Model.Variants.Any())
@@ -130,13 +128,12 @@
                             </label>
                             <select class="form-select form-select-lg mb-3" id="variantSelect">
                                 <option value="">Choose a rarity option</option>
-                                <!-- Change in variant options display -->
                                 @foreach (var variant in Model.Variants.OrderBy(v => v.Price))
                                 {
                                     <option value="@variant.VariantId"
                                             data-price="@variant.Price.ToString("0.00")"
                                             data-stock="@variant.StockQuantity">
-                                        @variant.RarityName - @variant.Price.ToString("N0").Replace(",", ".")đ
+                                        @variant.RarityName - @formatPrice(variant.Price)
                                         @if (variant.StockQuantity > 10)
                                         {
                                             <text>(Many in stock)</text>
@@ -158,23 +155,25 @@
                                     <span id="stockDisplay" class="badge rounded-pill bg-success me-2">
                                         <i class="bi bi-check-circle me-1"></i>In Stock
                                     </span>
-                                    <div class="stock-meter progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
                                         <div class="progress-bar bg-success" id="stockMeter" role="progressbar" style="width: 100%"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="quantity-control mb-4">
+                        <div class="mb-4">
                             <label for="quantity" class="form-label fw-bold">
                                 <i class="bi bi-123 me-2"></i>Quantity:
                             </label>
-                            <div class="input-group input-group-lg quantity-wrapper">
-                                <button class="btn btn-outline-secondary quantity-btn" type="button" id="decreaseQty">
+                            <div class="input-group" style="max-width: 180px;">
+                                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                                        style="width: 40px;" type="button" id="decreaseQty">
                                     <i class="bi bi-dash"></i>
                                 </button>
                                 <input type="number" class="form-control text-center" id="quantity" min="1" max="10" value="1">
-                                <button class="btn btn-outline-secondary quantity-btn" type="button" id="increaseQty">
+                                <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                                        style="width: 40px;" type="button" id="increaseQty">
                                     <i class="bi bi-plus"></i>
                                 </button>
                             </div>
@@ -189,10 +188,10 @@
                             </button>
                         </div>
 
-                        <div class="delivery-info mt-4">
+                        <div class="mt-4">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-truck text-success me-2 fs-5"></i>
-                                <span>Free shipping on orders over $50</span>
+                                <span>Free shipping on orders over 150.000đ</span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-shield-check text-success me-2 fs-5"></i>
@@ -213,8 +212,8 @@
     </div>
 
     <!-- Product Information Tabs -->
-    <div class="product-info-tabs mb-5">
-        <ul class="nav nav-tabs nav-fill" id="productInfoTabs" role="tablist">
+    <div class="mb-5">
+        <ul class="nav nav-tabs border-0" id="productInfoTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold" id="description-tab" data-bs-toggle="tab"
                         data-bs-target="#description-tab-pane" type="button" role="tab" aria-selected="true">
@@ -235,273 +234,26 @@
                 </button>
             </li>
         </ul>
-        <div class="tab-content bg-white p-4 shadow-sm rounded-bottom" id="productInfoTabsContent">
+        <div class="tab-content bg-white p-4 shadow-sm" id="productInfoTabsContent">
             <!-- Description Tab -->
-            <div class="tab-pane fade show active" id="description-tab-pane" role="tabpanel" aria-labelledby="description-tab" tabindex="0">
-                @if (!string.IsNullOrEmpty(Model.Description))
-                {
-                    <p class="lead">@Model.Description</p>
-                }
-                else
-                {
-                    <p class="text-muted fst-italic">No description available for this product.</p>
-                }
+            <div class="tab-pane fade show active" id="description-tab-pane" role="tabpanel" tabindex="0">
+                @await Html.PartialAsync("_DescriptionTab", Model)
             </div>
 
             <!-- Details Tab -->
-            <div class="tab-pane fade" id="details-tab-pane" role="tabpanel" aria-labelledby="details-tab" tabindex="0">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold mb-3">Product Specifications</h5>
-                        <table class="table table-striped">
-                            <tbody>
-                                <tr>
-                                    <th scope="row">Product ID</th>
-                                    <td>@Model.ProductId</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Category</th>
-                                    <td>@Model.CategoryName</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Date Added</th>
-                                    <td>@Model.CreatedDate.ToString("MMMM dd, yyyy")</td>
-                                </tr>
-                                @if (Model.Variants.Any())
-                                {
-                                    <tr>
-                                        <th scope="row">Available Rarities</th>
-                                        <td>@string.Join(", ", Model.Variants.Select(v => v.RarityName).Distinct())</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Price Range</th>
-                                        <td>@Model.PriceRange</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="fw-bold mb-3">Shipping Information</h5>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex">
-                                <i class="bi bi-truck me-3 text-primary"></i>
-                                <div>
-                                    <strong>Standard Shipping:</strong> 3-5 business days
-                                </div>
-                            </li>
-                            <li class="list-group-item d-flex">
-                                <i class="bi bi-lightning me-3 text-primary"></i>
-                                <div>
-                                    <strong>Express Shipping:</strong> 1-2 business days
-                                </div>
-                            </li>
-                            <li class="list-group-item d-flex">
-                                <i class="bi bi-globe me-3 text-primary"></i>
-                                <div>
-                                    <strong>International Shipping:</strong> 7-14 business days
-                                </div>
-                            </li>
-                            <li class="list-group-item d-flex">
-                                <i class="bi bi-box-seam me-3 text-primary"></i>
-                                <div>
-                                    <strong>Return Policy:</strong> 30 days money back guarantee
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="tab-pane fade" id="details-tab-pane" role="tabpanel" tabindex="0">
+                @await Html.PartialAsync("_DetailsTab", Model)
             </div>
 
             <!-- Reviews Tab -->
-            <div class="tab-pane fade" id="reviews-tab-pane" role="tabpanel" aria-labelledby="reviews-tab" tabindex="0" id="reviews">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0">Customer Reviews</h4>
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <button class="btn btn-primary" id="writeReviewBtn">
-                            <i class="bi bi-pencil-square me-2"></i>Write a Review
-                        </button>
-                    }
-                    else
-                    {
-                        <a href="@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })" class="btn btn-outline-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to Write a Review
-                        </a>
-                    }
-                </div>
-
-                @if (Model.Ratings != null && Model.Ratings.Any())
-                {
-                    <div class="row">
-                        <div class="col-lg-4 text-center">
-                            <div class="p-4 bg-light rounded-4">
-                                <h1 class="display-3 fw-bold text-primary">@Model.AverageRating.ToString("0.0")</h1>
-                                <div class="mb-2">
-                                    @for (int i = 1; i <= 5; i++)
-                                    {
-                                        if (i <= Math.Floor(Model.AverageRating))
-                                        {
-                                            <i class="bi bi-star-fill text-warning fs-5"></i>
-                                        }
-                                        else if (i - 0.5 <= Model.AverageRating)
-                                        {
-                                            <i class="bi bi-star-half text-warning fs-5"></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-star text-warning fs-5"></i>
-                                        }
-                                    }
-                                </div>
-                                <p class="text-muted">Based on @Model.RatingCount @(Model.RatingCount == 1 ? "review" : "reviews")</p>
-
-                                <div class="mt-3">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <!-- Display average ratings breakdown by percentage -->
-                                        @{
-                                            int fiveStars = Model.Ratings.Count(r => r.Rating == 5);
-                                            int fourStars = Model.Ratings.Count(r => r.Rating == 4);
-                                            int threeStars = Model.Ratings.Count(r => r.Rating == 3);
-                                            int twoStars = Model.Ratings.Count(r => r.Rating == 2);
-                                            int oneStar = Model.Ratings.Count(r => r.Rating == 1);
-
-                                            int totalRatings = Model.RatingCount;
-
-                                            int fiveStarPercent = totalRatings > 0 ? (fiveStars * 100) / totalRatings : 0;
-                                            int fourStarPercent = totalRatings > 0 ? (fourStars * 100) / totalRatings : 0;
-                                            int threeStarPercent = totalRatings > 0 ? (threeStars * 100) / totalRatings : 0;
-                                            int twoStarPercent = totalRatings > 0 ? (twoStars * 100) / totalRatings : 0;
-                                            int oneStarPercent = totalRatings > 0 ? (oneStar * 100) / totalRatings : 0;
-                                        }
-
-                                        <div class="text-center px-2">
-                                            <div class="fw-bold">@fiveStarPercent%</div>
-                                            <div class="small text-muted">5★</div>
-                                        </div>
-                                        <div class="text-center px-2">
-                                            <div class="fw-bold">@fourStarPercent%</div>
-                                            <div class="small text-muted">4★</div>
-                                        </div>
-                                        <div class="text-center px-2">
-                                            <div class="fw-bold">@threeStarPercent%</div>
-                                            <div class="small text-muted">3★</div>
-                                        </div>
-                                        <div class="text-center px-2">
-                                            <div class="fw-bold">@twoStarPercent%</div>
-                                            <div class="small text-muted">2★</div>
-                                        </div>
-                                        <div class="text-center px-2">
-                                            <div class="fw-bold">@oneStarPercent%</div>
-                                            <div class="small text-muted">1★</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-8">
-                            <div class="rating-bars mb-4">
-                                @for (int i = 5; i >= 1; i--)
-                                {
-                                    int ratingCount = Model.Ratings.Count(r => r.Rating == i);
-                                    int percentage = Model.RatingCount > 0 ? (ratingCount * 100) / Model.RatingCount : 0;
-
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="me-2 stars-label">@i <i class="bi bi-star-fill text-warning"></i></div>
-                                        <div class="progress flex-grow-1" style="height: 12px;">
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%">
-                                                <span class="visually-hidden">@percentage%</span>
-                                            </div>
-                                        </div>
-                                        <div class="ms-2 rating-count">@ratingCount</div>
-                                    </div>
-                                }
-                            </div>
-
-                            <!-- Review Filter Buttons -->
-                            <div class="review-filters mb-4">
-                                <h5 class="mb-2">Filter Reviews</h5>
-                                <div class="btn-group flex-wrap" role="group" aria-label="Rating filter">
-                                    <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
-                                    @for (int i = 5; i >= 1; i--)
-                                    {
-                                        int count = Model.Ratings.Count(r => r.Rating == i);
-                                        <button type="button" class="btn btn-outline-primary" data-filter="@i">
-                                            @i <i class="bi bi-star-fill"></i>
-                                            <span class="badge bg-secondary ms-1">@count</span>
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Individual Reviews with Card Style -->
-                            <div class="review-list">
-                                @foreach (var rating in Model.Ratings.OrderByDescending(r => r.CreatedDate))
-                                {
-                                    <div class="review-item card mb-3 border-0 shadow-sm" data-rating="@rating.Rating">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <h5 class="mb-0">
-                                                    <i class="bi bi-person-circle me-2"></i>@rating.UserName
-                                                </h5>
-                                                <span class="text-muted small">@rating.CreatedDate.ToString("MMM dd, yyyy")</span>
-                                            </div>
-                                            <div class="mb-2">
-                                                @for (int i = 1; i <= 5; i++)
-                                                {
-                                                    if (i <= rating.Rating)
-                                                    {
-                                                        <i class="bi bi-star-fill text-warning"></i>
-                                                    }
-                                                    else
-                                                    {
-                                                        <i class="bi bi-star text-warning"></i>
-                                                    }
-                                                }
-                                                <span class="badge bg-light text-dark ms-2">Verified Purchase</span>
-                                            </div>
-                                            <p class="card-text">@rating.Comment</p>
-                                            <div class="d-flex justify-content-end">
-                                                <button class="btn btn-sm btn-outline-secondary me-2" title="Helpful">
-                                                    <i class="bi bi-hand-thumbs-up me-1"></i>Helpful
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-secondary" title="Report">
-                                                    <i class="bi bi-flag me-1"></i>Report
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="text-center py-5">
-                        <i class="bi bi-chat-square-text display-1 text-muted mb-3"></i>
-                        <h4 class="text-muted">No reviews yet</h4>
-                        <p class="mb-4">Be the first to review this product!</p>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <button class="btn btn-primary btn-lg" id="firstReviewBtn">
-                                <i class="bi bi-pencil-square me-2"></i>Write a Review
-                            </button>
-                        }
-                        else
-                        {
-                            <a href="@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Login to Write a Review
-                            </a>
-                        }
-                    </div>
-                }
+            <div class="tab-pane fade" id="reviews-tab-pane" role="tabpanel" tabindex="0">
+                @await Html.PartialAsync("_ReviewsTab", Model)
             </div>
         </div>
     </div>
 
     <!-- Related Products Section -->
-    <section class="related-products mb-5">
+    <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold">Related Products</h3>
             <a href="@Url.Action("Index", "Product", new { categoryId = Model.CategoryId })" class="btn btn-outline-primary">
@@ -510,77 +262,52 @@
         </div>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-            <!-- Placeholder related products - these would be populated from the backend -->
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm product-card">
-                    <div class="position-relative">
-                        <img src="/images/placeholder.png" class="card-img-top product-image" alt="Related Product">
-                        <div class="position-absolute top-0 end-0 m-2">
-                            <span class="badge bg-danger">New</span>
+            <!-- Placeholder related products - would be populated from controller -->
+            @for (int i = 1; i <= 4; i++)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        @if (i == 1)
+                        {
+                            <div class="position-relative">
+                                <img src="/images/placeholder.png" class="card-img-top" style="height: 180px; object-fit: contain; padding: 1rem;" alt="Related Product">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-danger">New</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <img src="/images/placeholder.png" class="card-img-top" style="height: 180px; object-fit: contain; padding: 1rem;" alt="Related Product">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">Related Product @i</h5>
+                            <p class="card-text text-truncate">Same category</p>
+                            <p class="card-text fw-bold text-primary">@(15 + i * 5).999đ</p>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">Related Product 1</h5>
-                        <p class="card-text text-truncate">Same category</p>
-                        <p class="card-text fw-bold text-primary">$19.99</p>
-                    </div>
                 </div>
-            </div>
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm product-card">
-                    <img src="/images/placeholder.png" class="card-img-top product-image" alt="Related Product">
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">Related Product 2</h5>
-                        <p class="card-text text-truncate">Same category</p>
-                        <p class="card-text fw-bold text-primary">$24.99</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm product-card">
-                    <img src="/images/placeholder.png" class="card-img-top product-image" alt="Related Product">
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">Related Product 3</h5>
-                        <p class="card-text text-truncate">Same category</p>
-                        <p class="card-text fw-bold text-primary">$15.99</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm product-card">
-                    <img src="/images/placeholder.png" class="card-img-top product-image" alt="Related Product">
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">Related Product 4</h5>
-                        <p class="card-text text-truncate">Same category</p>
-                        <p class="card-text fw-bold text-primary">$29.99</p>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </section>
 </div>
+
 <!-- Image Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 bg-transparent shadow-none">
             <div class="modal-header border-0 p-0">
                 <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0 d-flex justify-content-center align-items-center">
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <img src="@Model.ImageUrl" class="img-fluid modal-image" alt="@Model.Name">
-                }
-                else
-                {
-                    <img src="/images/placeholder.png" class="img-fluid modal-image" alt="@Model.Name">
-                }
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
+                     class="img-fluid" style="max-height: 80vh;" alt="@Model.Name">
             </div>
         </div>
     </div>
 </div>
 
-<!-- Review Modal with improved design -->
+<!-- Review Modal -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -599,11 +326,11 @@
                         <div class="rating">
                             @for (int i = 1; i <= 5; i++)
                             {
-                                <i class="bi bi-star rating-star fs-2 mx-1" data-rating="@i"></i>
+                                <i class="bi bi-star fs-2 mx-1 rating-star text-black-50" data-rating="@i" style="cursor: pointer;"></i>
                             }
                             <input type="hidden" id="ratingValue" name="Rating" value="0">
                         </div>
-                        <div class="rating-text mt-2 text-primary fw-bold"></div>
+                        <div class="mt-2 fw-bold text-primary" id="ratingText"></div>
                     </div>
 
                     <div class="mb-3">
@@ -626,191 +353,65 @@
     </div>
 </div>
 
-<style>
-    
-    .product-detail-image {
-        width: auto;
-        max-width: 100%;
-        height: 400px;
-        object-fit: contain;
-        cursor: pointer; /* Show pointer cursor to indicate clickable */
-        transition: opacity 0.3s; /* Subtle hover effect */
-    }
-
-        .product-detail-image:hover {
-            opacity: 0.9;
-        }
-
-    .product-image-container {
-        padding: 2rem;
-        height: 400px;
-    }
-
-    /* Modal image styling */
-    .modal-image {
-        max-height: 80vh;
-        max-width: 100%;
-        object-fit: contain;
-    }
-
-    /* Dark backdrop for the modal */
-    .modal-backdrop.show {
-        opacity: 0.85;
-    }
-
-    
-
-    .rating-star {
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-        .rating-star:hover,
-        .rating-star.active {
-            color: #ffc107;
-            transform: scale(1.2);
-        }
-
-    .product-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 1rem;
-        overflow: hidden;
-    }
-
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-
-    .product-image {
-        height: 180px;
-        object-fit: contain;
-        padding: 1rem;
-        transition: transform 0.3s ease;
-    }
-
-    .product-card:hover .product-image {
-        transform: scale(1.05);
-    }
-
-    .quantity-wrapper {
-        max-width: 180px;
-    }
-
-    .quantity-btn {
-        width: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .stars-label {
-        width: 40px;
-        text-align: right;
-    }
-
-    .rating-count {
-        width: 40px;
-        text-align: left;
-    }
-
-    /* Tabs styling */
-    .nav-tabs .nav-link {
-        border: none;
-        color: #6c757d;
-        border-bottom: 3px solid transparent;
-        padding: 1rem 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .nav-tabs .nav-link.active {
-            color: #0d6efd;
-            border-bottom: 3px solid #0d6efd;
-            background-color: transparent;
-        }
-
-        .nav-tabs .nav-link:hover:not(.active) {
-            border-bottom: 3px solid #e9ecef;
-        }
-
-    /* Review item hover effect */
-    .review-item {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .review-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
-        }
-
-    /* Smooth transitions */
-    .tab-content > .tab-pane {
-        transition: all 0.3s ease;
-    }
-
-    /* Enhanced breadcrumb */
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        font-size: 1.2rem;
-        line-height: 1;
-        vertical-align: middle;
-    }
-</style>
-
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            // Initialize toasts and tooltips
+            var toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function (toastEl) {
+                new bootstrap.Toast(toastEl).show();
             });
 
-            // Initialize any toasts
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-            toastElList.map(function (toastEl) {
-                return new bootstrap.Toast(toastEl, {
-                    autohide: true,
-                    delay: 5000
-                });
+            var tooltipTriggerList = document.querySelectorAll('[title]');
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            // Initialize review modal
+            var reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+
+            // Format price in Vietnamese style
+            function formatPrice(price) {
+                return parseInt(price).toLocaleString('en-US').replace(/,/g, '.') + 'đ';
+            }
 
             // Handle variant selection
-            $("#variantSelect").change(function () {
-                    const selectedOption = $(this).find("option:selected");
-                    const variantId = $(this).val();
+            $("#variantSelect").change(function() {
+                const option = $(this).find("option:selected");
+                const variantId = $(this).val();
 
                 if (variantId) {
-                    // Update price display with animation and Vietnamese format
-                    const price = selectedOption.data("price");
-                    const formattedPrice = parseInt(price).toLocaleString('en-US').replace(/,/g, '.') + 'đ';
-
-                    $("#priceDisplay").fadeOut(200, function() {
-                        $(this).text(formattedPrice).fadeIn(200);
-                    });
+                    // Update price display
+                    const price = option.data("price");
+                    $("#priceDisplay").text(formatPrice(price));
 
                     // Update stock display
-                    const stock = selectedOption.data("stock");
-                    $("#stockInfo").removeClass("d-none").hide().fadeIn(300);
+                    const stock = option.data("stock");
+                    $("#stockInfo").removeClass("d-none");
 
                     if (stock > 0) {
-                        const stockPercentage = Math.min(stock * 10, 100); // For visual purposes
+                        const stockPct = Math.min(stock * 10, 100);
+                        const lowStock = stock <= 5;
 
                         $("#stockDisplay")
-                            .removeClass("bg-danger bg-warning")
-                            .addClass(stock <= 5 ? "bg-warning" : "bg-success")
-                            .html(stock <= 5 ?
+                            .removeClass("bg-danger bg-warning bg-success")
+                            .addClass(lowStock ? "bg-warning" : "bg-success")
+                            .html(lowStock ?
                                 `<i class="bi bi-exclamation-circle me-1"></i>Low Stock (${stock})` :
                                 `<i class="bi bi-check-circle me-1"></i>In Stock (${stock})`);
 
-                        // Animate stock meter
                         $("#stockMeter")
-                            .removeClass("bg-danger bg-warning")
-                            .addClass(stock <= 5 ? "bg-warning" : "bg-success")
-                            .css("width", "0%")
-                            .animate({
-                                width: stockPercentage + "%"
-                            }, 500);
+                            .removeClass("bg-danger bg-warning bg-success")
+                            .addClass(lowStock ? "bg-warning" : "bg-success")
+                            .css("width", `${stockPct}%`);
+
+                        // Update quantity control
+                        $("#quantity").attr("max", stock);
+                        if (parseInt($("#quantity").val()) > stock) {
+                            $("#quantity").val(stock);
+                        }
+
+                        $("#addToCartBtn").prop("disabled", false);
                     } else {
                         $("#stockDisplay")
                             .removeClass("bg-success bg-warning")
@@ -821,218 +422,97 @@
                             .removeClass("bg-success bg-warning")
                             .addClass("bg-danger")
                             .css("width", "100%");
-                    }
 
-                    // Set max quantity
-                    $("#quantity").attr("max", stock > 0 ? stock : 0);
-                    if (parseInt($("#quantity").val()) > stock) {
-                        $("#quantity").val(stock > 0 ? stock : 1);
+                        $("#addToCartBtn").prop("disabled", true);
                     }
-
-                    // Disable/enable the add to cart button
-                    $("#addToCartBtn").prop("disabled", stock <= 0);
                 } else {
-                    // Reset to price range with animation
-                    $("#priceDisplay").fadeOut(200, function() {
-                    $(this).text("@Model.PriceRange").fadeIn(200);
-                    });
-                    $("#stockInfo").fadeOut(300);
+                    // Reset price and hide stock info
+                    $("#priceDisplay").text("@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")đ");
+                    $("#stockInfo").addClass("d-none");
                 }
             });
 
-            // Quantity increment/decrement
-            $("#increaseQty").click(function() {
-                var currentQty = parseInt($("#quantity").val());
-                var maxQty = parseInt($("#quantity").attr("max"));
-                if (currentQty < maxQty) {
-                    $("#quantity").val(currentQty + 1);
-                }
-            });
-
+            // Quantity controls
             $("#decreaseQty").click(function() {
-                var currentQty = parseInt($("#quantity").val());
-                if (currentQty > 1) {
-                    $("#quantity").val(currentQty - 1);
-                }
+                var qty = parseInt($("#quantity").val());
+                if (qty > 1) $("#quantity").val(qty - 1);
             });
 
-            // Prevent manual entry of invalid quantities
+            $("#increaseQty").click(function() {
+                var qty = parseInt($("#quantity").val());
+                var max = parseInt($("#quantity").attr("max") || 10);
+                if (qty < max) $("#quantity").val(qty + 1);
+            });
+
+            // Validate quantity input
             $("#quantity").change(function() {
-                var currentQty = parseInt($(this).val());
-                var maxQty = parseInt($(this).attr("max"));
-                var minQty = parseInt($(this).attr("min"));
+                var qty = parseInt($(this).val());
+                var min = parseInt($(this).attr("min") || 1);
+                var max = parseInt($(this).attr("max") || 10);
 
-                if (isNaN(currentQty) || currentQty < minQty) {
-                    $(this).val(minQty);
-                } else if (currentQty > maxQty) {
-                    $(this).val(maxQty);
-                }
+                if (isNaN(qty) || qty < min) $(this).val(min);
+                else if (qty > max) $(this).val(max);
             });
 
-            // Initialize modal
-            let reviewModal;
-
-            function initModal() {
-                const modalElement = document.getElementById("reviewModal");
-                if (modalElement) {
-                    reviewModal = new bootstrap.Modal(modalElement);
-                }
-            }
-
-            // Initialize modal when document is ready
-            initModal();
-
-            // Handle write review buttons
-            $("#writeReviewBtn, #firstReviewBtn").on("click", function(e) {
-                e.preventDefault();
-                if (reviewModal) {
-                    // Reset form
-                    $("#ratingValue").val(0);
-                    $(".rating-star").removeClass("active bi-star-fill").addClass("bi-star");
-                    $("#comment").val("");
-                    $(".rating-text").text("");
-
-                    reviewModal.show();
-                } else {
-                    initModal();
-                    if (reviewModal) reviewModal.show();
-                }
-            });
-
-            // Handle star rating selection with labels
-            $(".rating-star").click(function() {
-                const rating = $(this).data("rating");
-                $("#ratingValue").val(rating);
-
-                // Update star appearance
-                $(".rating-star").removeClass("active");
-                $(".rating-star").removeClass("bi-star-fill").addClass("bi-star");
-
-                for (let i = 1; i <= rating; i++) {
-                    $(`.rating-star[data-rating="${i}"]`).addClass("active");
-                    $(`.rating-star[data-rating="${i}"]`).removeClass("bi-star").addClass("bi-star-fill");
-                }
-
-                // Show rating text
-                const ratingTexts = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
-                $(".rating-text").text(ratingTexts[rating]);
-            });
-
-            // Star hover effects
+            // Rating star interaction
             $(".rating-star").hover(
                 function() {
                     const rating = $(this).data("rating");
-
-                    for (let i = 1; i <= rating; i++) {
-                        $(`.rating-star[data-rating="${i}"]`).addClass("text-warning");
-                    }
+                    highlightStars(rating);
                 },
                 function() {
-                    $(".rating-star").removeClass("text-warning");
-                    $(".rating-star.active").addClass("text-warning");
+                    const rating = parseInt($("#ratingValue").val());
+                    highlightStars(rating);
                 }
             );
 
-            // Handle add to cart button
-            $("#addToCartBtn").click(function() {
-                const variantId = $("#variantSelect").val();
-                const quantity = parseInt($("#quantity").val());
-                const productId = "@Model.ProductId";
+            $(".rating-star").click(function() {
+                const rating = $(this).data("rating");
+                $("#ratingValue").val(rating);
+                highlightStars(rating);
 
-                if (!variantId) {
-                    // Show error message with animation
-                    $("<div>").addClass("alert alert-warning alert-dismissible fade show")
-                        .html('<i class="bi bi-exclamation-triangle-fill me-2"></i>Please select a rarity option<button type="button" class="btn-close" data-bs-dismiss="alert"></button>')
-                        .prependTo("#stockInfo").hide().slideDown();
-                    return;
-                }
-
-                if (isNaN(quantity) || quantity < 1) {
-                    alert("Please select a valid quantity");
-                    return;
-                }
-
-                // Show loading state
-                const originalBtnHtml = $(this).html();
-                $(this).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding to cart...').prop('disabled', true);
-
-                // Make an AJAX call to add the item to cart
-                $.ajax({
-                    url: '@Url.Action("AddToCart", "ShoppingCart")',
-                    type: 'POST',
-                    data: {
-                        VariantId: variantId,
-                        Quantity: quantity,
-                        ProductId: productId
-                    },
-                    success: function(result) {
-                        if (result.success) {
-                            // Show success message with Bootstrap toast
-                            const toast = `
-                                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                                    <div class="d-flex">
-                                        <div class="toast-body">
-                                            <i class="bi bi-check-circle me-2"></i>
-                                            Item added to cart successfully!
-                                        </div>
-                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                    </div>
-                                </div>
-                            `;
-                            $('.toast-container').append(toast);
-
-                            // Initialize and show the toast
-                            const toastEl = document.querySelector('.toast:last-child');
-                            const bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
-                            bsToast.show();
-
-                            // Update cart count in navbar
-                            refreshCartCount();
-
-                            // Add a subtle shake animation to the cart icon in the navbar
-                            $("#cart-icon").addClass("animate__animated animate__tada");
-                            setTimeout(() => {
-                                $("#cart-icon").removeClass("animate__animated animate__tada");
-                            }, 1000);
-                        } else {
-                            alert(result.message || 'Failed to add item to cart.');
-                        }
-
-                        // Reset button state
-                        $("#addToCartBtn").html(originalBtnHtml).prop('disabled', false);
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 401) {
-                            alert("You must be logged in to add items to cart.");
-                            window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
-                        } else {
-                            alert('An error occurred while adding the item to cart.');
-                        }
-
-                        // Reset button state
-                        $("#addToCartBtn").html(originalBtnHtml).prop('disabled', false);
-                    }
-                });
+                // Show text rating
+                const texts = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+                $("#ratingText").text(texts[rating]);
             });
 
-            // Handle review submission
+            function highlightStars(rating) {
+                $(".rating-star").each(function(index) {
+                    const starRating = $(this).data("rating");
+                    $(this).removeClass("bi-star-fill bi-star text-warning text-black-50")
+                        .addClass(starRating <= rating ? "bi-star-fill text-warning" : "bi-star text-black-50");
+                });
+            }
+
+            // Review modal controls
+            $("#writeReviewBtn, #firstReviewBtn").click(function() {
+                // Reset form
+                $("#ratingValue").val(0);
+                highlightStars(0);
+                $("#ratingText").text("");
+                $("#comment").val("");
+
+                reviewModal.show();
+            });
+
+            // Submit review
             $("#submitReview").click(function() {
                 const rating = $("#ratingValue").val();
                 const comment = $("#comment").val();
                 const productId = $("#productId").val();
 
                 if (rating < 1) {
-                    $("<div>").addClass("alert alert-danger")
-                        .html('<i class="bi bi-exclamation-triangle-fill me-2"></i>Please select a rating')
-                        .prependTo("#reviewForm").hide().slideDown();
+                    alert("Please select a rating.");
                     return;
                 }
 
                 // Show loading state
-                const originalBtnHtml = $(this).html();
-                $(this).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...').prop('disabled', true);
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.prop('disabled', true)
+                   .html('<span class="spinner-border spinner-border-sm me-2"></span>Submitting...');
 
-                // Submit the form via AJAX
+                // Submit the review via AJAX
                 $.ajax({
                     url: '@Url.Action("AddRating", "Product")',
                     type: 'POST',
@@ -1042,98 +522,117 @@
                         Comment: comment
                     },
                     success: function(result) {
-                        // Refresh the page to show the new rating
-                        location.reload();
+                        if (result.success) {
+                            // Refresh the page to show updated ratings
+                            location.reload();
+                        } else {
+                            alert(result.message || "Failed to submit review.");
+                            btn.html(originalText).prop('disabled', false);
+                            reviewModal.hide();
+                        }
                     },
-                    error: function(xhr, status, error) {
+                    error: function(xhr) {
                         if (xhr.status === 401) {
-                            // Unauthorized - user not logged in
-                            alert("You must be logged in to submit a review. You will be redirected to the login page.");
+                            alert("You must be logged in to submit a review.");
                             window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
                         } else {
-                            alert("An error occurred while submitting your review: " + error);
-                            // Reset button state
-                            $("#submitReview").html(originalBtnHtml).prop('disabled', false);
+                            alert("An error occurred while submitting your review.");
+                            btn.html(originalText).prop('disabled', false);
                         }
                     }
                 });
             });
 
-            // Filter reviews by rating
-            $(".review-filters button").click(function() {
-                const filter = $(this).data("filter");
+            // Add to cart
+            $("#addToCartBtn").click(function() {
+                const variantId = $("#variantSelect").val();
+                const quantity = parseInt($("#quantity").val());
+                const productId = "@Model.ProductId";
 
-                // Update active button
-                $(".review-filters button").removeClass("active");
-                $(this).addClass("active");
-
-                // Filter reviews
-                if (filter === "all") {
-                    $(".review-item").slideDown();
-                } else {
-                    $(".review-item").hide();
-                    $(".review-item[data-rating='" + filter + "']").slideDown();
+                if (!variantId) {
+                    alert("Please select a rarity option");
+                    return;
                 }
-            });
 
-            // Function to refresh the cart count
-            function refreshCartCount() {
+                // Show loading state
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.prop('disabled', true)
+                   .html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+
+                // Add to cart via AJAX
                 $.ajax({
-                    url: '@Url.Action("GetCartCount", "ShoppingCart")',
-                    type: 'GET',
+                    url: '@Url.Action("AddToCart", "ShoppingCart")',
+                    type: 'POST',
+                    data: { VariantId: variantId, Quantity: quantity, ProductId: productId },
                     success: function(result) {
                         if (result.success) {
-                            $('#cart-count').text(result.count);
-                            // Make the badge visible if there are items
-                            if (result.count > 0) {
-                                $('#cart-count').show();
-                            } else {
-                                $('#cart-count').hide();
-                            }
+                            // Show success toast
+                            const toast = `
+                                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="bi bi-check-circle me-2"></i>Item added to cart successfully!
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                    </div>
+                                </div>`;
+
+                            $('.toast-container').append(toast);
+                            new bootstrap.Toast($('.toast:last')).show();
+
+                            // Update cart count (assuming there's a function for this)
+                            $.ajax({
+                                url: '@Url.Action("GetCartCount", "ShoppingCart")',
+                                type: 'GET',
+                                success: function(cartResult) {
+                                    if (cartResult.success) {
+                                        $('#cart-count').text(cartResult.count).show();
+                                    }
+                                }
+                            });
+                        } else {
+                            alert(result.message || 'Failed to add item to cart.');
                         }
+
+                        btn.html(originalText).prop('disabled', false);
                     },
-                    error: function() {
-                        console.error("Failed to update cart count");
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            alert("You must be logged in to add items to cart.");
+                            window.location = '@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })';
+                        } else {
+                            alert('An error occurred while adding the item to cart.');
+                        }
+
+                        btn.html(originalText).prop('disabled', false);
                     }
                 });
-            }
+            });
 
-            // Initial load of cart count
-            refreshCartCount();
+            // Filter reviews
+            $("[data-filter]").click(function() {
+                const filter = $(this).data("filter");
 
-        $("#mainProductImage").click(function() {
-            // The modal is handled automatically by Bootstrap data attributes
-            // But you can add additional code here if needed
-        });
+                $("[data-filter]").removeClass("active");
+                $(this).addClass("active");
 
-        // Add a loading animation when the modal is opening
-        $('#imageModal').on('show.bs.modal', function () {
-            $('.modal-image').css('opacity', '0');
-            setTimeout(function() {
-                $('.modal-image').animate({
-                    opacity: 1
-                }, 300);
-            }, 100);
-        });
-
-            // Auto-show tab based on URL hash
-            if (window.location.hash) {
-                const hash = window.location.hash;
-                if ($(hash + '-tab').length) {
-                    $(hash + '-tab').tab('show');
-                } else if (hash === '#reviews' && $('#reviews-tab').length) {
-                    $('#reviews-tab').tab('show');
-                }
-            }
-
-            // Update URL hash when tab changes
-            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                if (history.pushState) {
-                    history.pushState(null, null, '#' + $(e.target).attr('href').substr(1));
+                if (filter === "all") {
+                    $(".review-item").fadeIn();
                 } else {
-                    location.hash = '#' + $(e.target).attr('href').substr(1);
+                    $(".review-item").hide();
+                    $(`.review-item[data-rating="${filter}"]`).fadeIn();
                 }
             });
+
+            // Auto-show tab based on URL hash
+            const hash = window.location.hash;
+            if (hash) {
+                const tab = $(`a[href="${hash}"], button[data-bs-target="${hash}-pane"]`);
+                if (tab.length) {
+                    new bootstrap.Tab(tab[0]).show();
+                }
+            }
         });
     </script>
 }

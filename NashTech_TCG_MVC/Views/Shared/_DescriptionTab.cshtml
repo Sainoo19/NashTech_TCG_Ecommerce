@@ -1,0 +1,10 @@
+﻿@model ProductViewModel
+
+@if (!string.IsNullOrEmpty(Model.Description))
+{
+    <p class="lead">@Model.Description</p>
+}
+else
+{
+    <p class="text-muted fst-italic">No description available for this product.</p>
+}

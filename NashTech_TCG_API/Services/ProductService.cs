@@ -57,17 +57,81 @@ namespace NashTech_TCG_API.Services
             string categoryId = null,
             string searchTerm = null,
             string sortBy = null,
-            bool ascending = true)
+            bool ascending = true,
+            decimal? minPrice = null,
+            decimal? maxPrice = null)
         {
-            var (products, totalCount) = await _productRepository.GetPagedProductsAsync(
-                pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending);
+            try
+            {
+                // Get base products with pagination and filtering
+                var (products, totalCount) = await _productRepository.GetPagedProductsAsync(
+                    pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending);
 
-            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-            var productDTOs = await Task.WhenAll(products.Select(async p => await MapToDTO(p)));
+                // Transform products to DTOs with price info
+                var productDTOs = new List<ProductDTO>();
 
-            return (productDTOs, totalCount, totalPages);
+                foreach (var product in products)
+                {
+                    // Ensure category is loaded
+                    if (product.Category == null)
+                    {
+                        product.Category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+                    }
+
+                    // Get all variants for this product to calculate price range
+                    var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+                    // Get all variants for this product to calculate price range
+                   
+
+                    // Only calculate min/max if variants exist
+                    if (variants.Any())
+                    {
+                        minPrice = variants.Min(v => v.Price);
+                        maxPrice = variants.Max(v => v.Price);
+                    }
+
+                    // Apply price filter if set
+                    if ((minPrice.HasValue || maxPrice.HasValue) && variants.Any())
+                    {
+                        var productMinPrice = variants.Min(v => v.Price);
+                        var productMaxPrice = variants.Max(v => v.Price);
+
+                        // Skip this product if it doesn't match the price filter
+                        if ((minPrice.HasValue && productMaxPrice < minPrice) ||
+                            (maxPrice.HasValue && productMinPrice > maxPrice))
+                        {
+                            continue;
+                        }
+                    }
+
+                    var dto = new ProductDTO
+                    {
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        CategoryName = product.Category?.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        MinPrice = minPrice,
+                        MaxPrice = maxPrice,
+                        CreatedDate = product.CreatedDate,
+                        UpdatedDate = product.UpdatedDate
+                    };
+
+                    productDTOs.Add(dto);
+                }
+
+                return (productDTOs, totalCount, totalPages);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving paged products");
+                throw;
+            }
         }
+
 
         public async Task<ProductDTO> CreateProductAsync(CreateProductDTO productDTO)
         {
@@ -196,6 +260,19 @@ namespace NashTech_TCG_API.Services
                 product.Category = await _categoryRepository.GetByIdAsync(product.CategoryId);
             }
 
+            // Get all variants for this product to calculate price range
+            var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+            decimal? minPrice = null;
+            decimal? maxPrice = null;
+
+            // Only calculate min/max if variants exist
+            if (variants.Any())
+            {
+                minPrice = variants.Min(v => v.Price);
+                maxPrice = variants.Max(v => v.Price);
+            }
+
             return new ProductDTO
             {
                 ProductId = product.ProductId,
@@ -204,10 +281,13 @@ namespace NashTech_TCG_API.Services
                 CategoryName = product.Category?.Name,
                 Description = product.Description,
                 ImageUrl = product.ImageUrl,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
                 CreatedDate = product.CreatedDate,
                 UpdatedDate = product.UpdatedDate
             };
         }
+
 
         public async Task<(IEnumerable<ProductViewModel> Products, int TotalCount, int TotalPages)> GetPagedProductsForClientAsync(
             int pageNumber,

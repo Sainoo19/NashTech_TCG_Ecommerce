@@ -66,20 +66,71 @@ namespace NashTech_TCG_MVC.Controllers
                     return BadRequest();
                 }
 
-                var (success, message, data) = await _productService.GetProductDetailsAsync(id);
+                var (success, message, product) = await _productService.GetProductDetailsAsync(id);
 
-                if (success)
+                if (!success)
                 {
-                    return View(data);
+                    _logger.LogWarning($"Failed to retrieve product {id}: {message}");
+                    return View("Error", message);
                 }
 
-                _logger.LogWarning($"Failed to retrieve product {id}: {message}");
-                return View("Error", message);
+                // Prepare rating statistics for the view
+                var ratingStats = new Dictionary<int, int>();
+                var ratingPercentages = new Dictionary<int, int>();
+
+                for (int i = 5; i >= 1; i--)
+                {
+                    int count = product.Ratings?.Count(r => r.Rating == i) ?? 0;
+                    int percentage = product.RatingCount > 0 ? (count * 100) / product.RatingCount : 0;
+
+                    ratingStats[i] = count;
+                    ratingPercentages[i] = percentage;
+                }
+
+                ViewBag.RatingStats = ratingStats;
+                ViewBag.RatingPercentages = ratingPercentages;
+
+                // Format all prices in Vietnamese style
+                ViewBag.FormatPrice = new Func<decimal, string>(price =>
+                    price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".") + "đ");
+
+                return View(product);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error retrieving product {id}");
                 return View("Error", "An error occurred while retrieving the product.");
+            }
+        }
+
+        // Add new method to handle tab activation and review filtering
+        [HttpGet]
+        public async Task<IActionResult> GetProductTab(string id, string tab, int? filterRating = null)
+        {
+            var (success, _, product) = await _productService.GetProductDetailsAsync(id);
+
+            if (!success)
+            {
+                return PartialView("_ErrorPartial", "Failed to load product data");
+            }
+
+            if (tab.Equals("reviews", StringComparison.OrdinalIgnoreCase))
+            {
+                // Filter ratings if needed
+                if (filterRating.HasValue)
+                {
+                    product.Ratings = product.Ratings.Where(r => r.Rating == filterRating.Value);
+                }
+
+                return PartialView("_ReviewsTab", product);
+            }
+            else if (tab.Equals("details", StringComparison.OrdinalIgnoreCase))
+            {
+                return PartialView("_DetailsTab", product);
+            }
+            else // Default to description
+            {
+                return PartialView("_DescriptionTab", product);
             }
         }
 
@@ -117,12 +168,22 @@ namespace NashTech_TCG_MVC.Controllers
         {
             if (!User.Identity.IsAuthenticated)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "You must be logged in to submit a review." });
+                }
+
                 // Redirect to login page with return URL to this product
                 return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = model.ProductId }) });
             }
 
             if (!ModelState.IsValid)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Please provide a valid rating." });
+                }
+
                 // Return to product details with error
                 TempData["ErrorMessage"] = "Please provide a valid rating.";
                 return RedirectToAction(nameof(Details), new { id = model.ProductId });
@@ -131,6 +192,11 @@ namespace NashTech_TCG_MVC.Controllers
             try
             {
                 var (success, message, data) = await _productService.AddProductRatingAsync(model);
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success, message, data });
+                }
 
                 if (success)
                 {
@@ -146,10 +212,16 @@ namespace NashTech_TCG_MVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error adding rating for product {model.ProductId}");
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "An error occurred while submitting your review." });
+                }
+
                 TempData["ErrorMessage"] = "An error occurred while submitting your rating.";
                 return RedirectToAction(nameof(Details), new { id = model.ProductId });
             }
         }
-
     }
+
 }

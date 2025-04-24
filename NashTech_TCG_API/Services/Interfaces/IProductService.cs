@@ -15,7 +15,9 @@ namespace NashTech_TCG_API.Services.Interfaces
             string categoryId = null,
             string searchTerm = null,
             string sortBy = null,
-            bool ascending = true);
+            bool ascending = true,
+            decimal? minPrice = null,
+            decimal? maxPrice = null);
         Task<ProductDTO> CreateProductAsync(CreateProductDTO productDTO);
         Task<ProductDTO> UpdateProductAsync(string id, UpdateProductDTO productDTO);
         Task<bool> DeleteProductAsync(string id);
@@ -27,10 +29,9 @@ namespace NashTech_TCG_API.Services.Interfaces
             string searchTerm = null,
             string sortBy = null,
             bool ascending = true);
-        // Add to API IProductService.cs interface
+        
         Task<ProductViewModel> GetProductDetailsAsync(string id);
         Task<ProductRatingViewModel> AddProductRatingAsync(ProductRatingInputViewModel model, string userId);
         Task<IEnumerable<ProductViewModel>> GetTopRatedProductsByCategoryAsync(string categoryId, int limit = 8);
-
     }
 }

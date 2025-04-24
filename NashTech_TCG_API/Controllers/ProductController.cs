@@ -28,12 +28,14 @@ namespace NashTech_TCG_API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetProducts(
-            [FromQuery] string categoryId = null,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string searchTerm = null,
-            [FromQuery] string sortBy = null,
-            [FromQuery] bool ascending = true)
+         [FromQuery] string categoryId = null,
+         [FromQuery] int pageNumber = 1,
+         [FromQuery] int pageSize = 10,
+         [FromQuery] string searchTerm = null,
+         [FromQuery] string sortBy = null,
+         [FromQuery] bool ascending = true,
+         [FromQuery] decimal? minPrice = null,
+         [FromQuery] decimal? maxPrice = null)
         {
             try
             {
@@ -44,7 +46,7 @@ namespace NashTech_TCG_API.Controllers
                     pageSize = 10;
 
                 var (products, totalCount, totalPages) = await _productService.GetPagedProductsAsync(
-                    pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending);
+                    pageNumber, pageSize, categoryId, searchTerm, sortBy, ascending, minPrice, maxPrice);
 
                 var paginatedResult = new PagedResultDTO<ProductDTO>
                 {
@@ -65,6 +67,7 @@ namespace NashTech_TCG_API.Controllers
                 return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving products"));
             }
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProduct(string id)

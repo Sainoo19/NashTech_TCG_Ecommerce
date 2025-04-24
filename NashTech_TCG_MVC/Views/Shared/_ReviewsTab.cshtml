@@ -1,0 +1,157 @@
+﻿@model ProductViewModel
+@{
+    var ratingStats = ViewBag.RatingStats as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var ratingPercentages = ViewBag.RatingPercentages as Dictionary<int, int> ?? new Dictionary<int, int>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Customer Reviews</h4>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <button class="btn btn-primary" id="writeReviewBtn">
+            <i class="bi bi-pencil-square me-2"></i>Write a Review
+        </button>
+    }
+    else
+    {
+        <a href="@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })" class="btn btn-outline-primary">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Login to Write a Review
+        </a>
+    }
+</div>
+
+@if (Model.Ratings != null && Model.Ratings.Any())
+{
+    <div class="row">
+        <div class="col-lg-4 text-center">
+            <div class="p-4 bg-light rounded-4">
+                <h1 class="display-3 fw-bold text-primary">@Model.AverageRating.ToString("0.0")</h1>
+                <div class="mb-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Floor(Model.AverageRating))
+                        {
+                            <i class="bi bi-star-fill text-warning fs-5"></i>
+                        }
+                        else if (i - 0.5 <= Model.AverageRating)
+                        {
+                            <i class="bi bi-star-half text-warning fs-5"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-warning fs-5"></i>
+                        }
+                    }
+                </div>
+                <p class="text-muted">Based on @Model.RatingCount @(Model.RatingCount == 1 ? "review" : "reviews")</p>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-center gap-2">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            <div class="text-center px-2">
+                                <div class="fw-bold">@(ratingPercentages.ContainsKey(i) ? ratingPercentages[i] : 0)%</div>
+                                <div class="small text-muted">@i★</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="mb-4">
+                @for (int i = 5; i >= 1; i--)
+                {
+                    int count = ratingStats.ContainsKey(i) ? ratingStats[i] : 0;
+                    int percentage = ratingPercentages.ContainsKey(i) ? ratingPercentages[i] : 0;
+
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="me-2 text-end" style="width: 40px;">@i <i class="bi bi-star-fill text-warning"></i></div>
+                        <div class="progress flex-grow-1" style="height: 12px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%">
+                                <span class="visually-hidden">@percentage%</span>
+                            </div>
+                        </div>
+                        <div class="ms-2" style="width: 40px;">@count</div>
+                    </div>
+                }
+            </div>
+
+            <!-- Review Filter Buttons -->
+            <div class="mb-4">
+                <h5 class="mb-2">Filter Reviews</h5>
+                <div class="btn-group flex-wrap" role="group" aria-label="Rating filter">
+                    <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
+                    @for (int i = 5; i >= 1; i--)
+                    {
+                        int count = ratingStats.ContainsKey(i) ? ratingStats[i] : 0;
+                        <button type="button" class="btn btn-outline-primary" data-filter="@i">
+                            @i <i class="bi bi-star-fill"></i>
+                            <span class="badge bg-secondary ms-1">@count</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Individual Reviews -->
+            <div class="review-list">
+                @foreach (var rating in Model.Ratings.OrderByDescending(r => r.CreatedDate))
+                {
+                    <div class="card mb-3 border-0 shadow-sm review-item" data-rating="@rating.Rating">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-person-circle me-2"></i>@rating.UserName
+                                </h5>
+                                <span class="text-muted small">@rating.CreatedDate.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="mb-2">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= rating.Rating)
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                                <span class="badge bg-light text-dark ms-2">Verified Purchase</span>
+                            </div>
+                            <p class="card-text">@rating.Comment</p>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i>Helpful
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-flag me-1"></i>Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="bi bi-chat-square-text display-1 text-muted mb-3"></i>
+        <h4 class="text-muted">No reviews yet</h4>
+        <p class="mb-4">Be the first to review this product!</p>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <button class="btn btn-primary btn-lg" id="firstReviewBtn">
+                <i class="bi bi-pencil-square me-2"></i>Write a Review
+            </button>
+        }
+        else
+        {
+            <a href="@Url.Action("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = Model.ProductId }) })" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login to Write a Review
+            </a>
+        }
+    </div>
+}

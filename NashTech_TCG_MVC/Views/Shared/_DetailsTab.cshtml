@@ -1,0 +1,63 @@
+﻿@model ProductViewModel
+
+<div class="row">
+    <div class="col-md-6">
+        <h5 class="fw-bold mb-3">Product Specifications</h5>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th scope="row">Product ID</th>
+                    <td>@Model.ProductId</td>
+                </tr>
+                <tr>
+                    <th scope="row">Category</th>
+                    <td>@Model.CategoryName</td>
+                </tr>
+                <tr>
+                    <th scope="row">Date Added</th>
+                    <td>@Model.CreatedDate.ToString("MMMM dd, yyyy")</td>
+                </tr>
+                @if (Model.Variants.Any())
+                {
+                    <tr>
+                        <th scope="row">Available Rarities</th>
+                        <td>@string.Join(", ", Model.Variants.Select(v => v.RarityName).Distinct())</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Price Range</th>
+                        <td>@Model.PriceRange</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h5 class="fw-bold mb-3">Shipping Information</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex">
+                <i class="bi bi-truck me-3 text-primary"></i>
+                <div>
+                    <strong>Standard Shipping:</strong> 3-5 business days
+                </div>
+            </li>
+            <li class="list-group-item d-flex">
+                <i class="bi bi-lightning me-3 text-primary"></i>
+                <div>
+                    <strong>Express Shipping:</strong> 1-2 business days
+                </div>
+            </li>
+            <li class="list-group-item d-flex">
+                <i class="bi bi-globe me-3 text-primary"></i>
+                <div>
+                    <strong>International Shipping:</strong> 7-14 business days
+                </div>
+            </li>
+            <li class="list-group-item d-flex">
+                <i class="bi bi-box-seam me-3 text-primary"></i>
+                <div>
+                    <strong>Return Policy:</strong> 30 days money back guarantee
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
