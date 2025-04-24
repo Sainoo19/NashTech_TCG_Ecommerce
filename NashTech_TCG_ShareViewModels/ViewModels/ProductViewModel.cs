@@ -6,6 +6,12 @@ namespace NashTech_TCG_ShareViewModels.ViewModels
 {
     public class ProductViewModel
     {
+        // Helper method for Vietnamese price formatting
+        private string FormatPrice(decimal price)
+        {
+            // Format with thousands separator (dot in Vietnamese format) and no decimal places
+            return price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".");
+        }
         public string ProductId { get; set; }
         public string Name { get; set; }
         public string CategoryId { get; set; }
@@ -15,7 +21,8 @@ namespace NashTech_TCG_ShareViewModels.ViewModels
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public string PriceRange => MinPrice.HasValue && MaxPrice.HasValue ?
-            (MinPrice == MaxPrice ? $"${MinPrice}" : $"${MinPrice} - ${MaxPrice}") : "N/A";
+     (MinPrice == MaxPrice ? $"{FormatPrice(MinPrice.Value)}đ" : $"{FormatPrice(MinPrice.Value)}đ - {FormatPrice(MaxPrice.Value)}đ") : "N/A";
+
         public DateTime CreatedDate { get; set; }
 
         // Product details specific properties
@@ -59,4 +66,5 @@ namespace NashTech_TCG_ShareViewModels.ViewModels
         public string SortBy { get; set; }
         public bool Ascending { get; set; }
     }
+
 }

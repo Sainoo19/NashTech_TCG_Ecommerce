@@ -178,37 +178,44 @@
         border-radius: 5px;
     }
 
-    /* Category button styles */
+    /* Center the category buttons and add top margin */
     .category-buttons-wrapper {
-        overflow-x: auto;
-        padding-bottom: 10px;
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        margin-top: 20px; /* Add top margin */
     }
 
     .category-buttons {
         display: flex;
-        flex-wrap: nowrap;
-        gap: 10px;
-        min-width: min-content;
+        flex-wrap: wrap; /* Allow wrapping if needed */
+        gap: 10px; /* Add spacing between buttons */
+        justify-content: center; /* Center buttons within the wrapper */
     }
 
+    /* Enhance hover effect for category buttons */
     .category-btn {
         white-space: nowrap;
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
         color: #212529;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease, box-shadow 0.3s ease;
+        padding: 10px 20px; /* Add padding for better appearance */
+        border-radius: 5px; /* Add rounded corners */
     }
 
         .category-btn:hover {
             background-color: #e9ecef;
             transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
         }
 
         .category-btn.active {
             background-color: #4a47a3;
             color: white;
             border-color: #4a47a3;
+            box-shadow: 0 4px 6px rgba(74, 71, 163, 0.4); /* Add shadow for active state */
         }
+
 
     /* Section styles */
     .section-title {

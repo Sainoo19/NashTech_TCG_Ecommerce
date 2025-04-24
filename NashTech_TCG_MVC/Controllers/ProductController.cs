@@ -57,7 +57,6 @@ namespace NashTech_TCG_MVC.Controllers
             }
         }
 
-        // Update in MVC ProductController.cs
         public async Task<IActionResult> Details(string id)
         {
             try
@@ -84,9 +83,6 @@ namespace NashTech_TCG_MVC.Controllers
             }
         }
 
-
-
-        // Add action for AJAX search
         [HttpGet]
         public async Task<IActionResult> Search(
             string searchTerm = null,

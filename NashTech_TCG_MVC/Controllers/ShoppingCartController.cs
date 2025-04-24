@@ -32,6 +32,11 @@ namespace NashTech_TCG_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(AddToCartViewModel model)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                // Redirect to login page with return URL to this product
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action("Details", "Product", new { id = model.ProductId }) });
+            }
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { success = false, message = "Invalid model state" });

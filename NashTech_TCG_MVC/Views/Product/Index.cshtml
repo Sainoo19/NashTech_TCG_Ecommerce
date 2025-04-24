@@ -4,84 +4,128 @@
     ViewData["Title"] = "Products";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <!-- Left sidebar - Filter/Search (3/10 width) -->
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <!-- Left sidebar - Filter panel with collapsible sections on mobile -->
         <div class="col-lg-3">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Search & Filter</h5>
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header text-white py-3 rounded-top" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
+                        <button class="btn btn-sm btn-light d-lg-none" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#filterContent" aria-expanded="false">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form id="filterForm" method="get" action="@Url.Action("Index", "Product")">
-                        <!-- Search with debounce -->
-                        <div class="mb-3">
-                            <label for="searchTerm" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="searchTerm" name="searchTerm"
-                                   value="@Model.SearchTerm" autocomplete="off">
-                        </div>
-
-                        <!-- Category filter with all categories -->
-                        <div class="mb-3">
-                            <label for="categoryId" class="form-label">Category</label>
-                            <select class="form-select" id="categoryId" name="categoryId">
-                                <option value="">All Categories</option>
-                                @if (ViewBag.Categories != null)
-                                {
-                                    foreach (var category in ViewBag.Categories)
-                                    {
-                                        <option value="@category.CategoryId" selected="@(Model.CategoryId == category.CategoryId)">
-                                            @category.Name
-                                        </option>
-                                    }
-                                }
-                            </select>
-                        </div>
-
-                        <!-- Sort options -->
-                        <div class="mb-3">
-                            <label for="sortBy" class="form-label">Sort By</label>
-                            <select class="form-select" id="sortBy" name="sortBy">
-                                <option value="name" selected="@(Model.SortBy == "name")">Name</option>
-                                <option value="date" selected="@(Model.SortBy == "date")">Date</option>
-                                <option value="price" selected="@(Model.SortBy == "price")">Price</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort direction -->
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="ascending" name="ascending"
-                                       value="true" checked="@Model.Ascending">
-                                <label class="form-check-label" for="ascending">Ascending</label>
+                <div class="collapse d-lg-block" id="filterContent">
+                    <div class="card-body">
+                        <form id="filterForm" method="get" action="@Url.Action("Index", "Product")">
+                            <!-- Search with icon -->
+                            <div class="mb-4">
+                                <label for="searchTerm" class="form-label fw-semibold"><i class="bi bi-search me-2"></i>Search</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control border-end-0" id="searchTerm" name="searchTerm"
+                                           placeholder="Search products..." value="@Model.SearchTerm" autocomplete="off">
+                                    <span class="input-group-text bg-white border-start-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Apply All Filters</button>
-                    </form>
+                            <hr class="my-3">
+
+                            <!-- Category filter with all categories -->
+                            <div class="mb-4">
+                                <label for="categoryId" class="form-label fw-semibold">
+                                    <i class="bi bi-tags me-2"></i>Category
+                                </label>
+                                <select class="form-select" id="categoryId" name="categoryId">
+                                    <option value="">All Categories</option>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        foreach (var category in ViewBag.Categories)
+                                        {
+                                            <option value="@category.CategoryId" selected="@(Model.CategoryId == category.CategoryId)">
+                                                @category.Name
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <hr class="my-3">
+
+                            <!-- Sort options with icons -->
+                            <div class="mb-4">
+                                <label for="sortBy" class="form-label fw-semibold">
+                                    <i class="bi bi-sort-alpha-down me-2"></i>Sort By
+                                </label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="name" selected="@(Model.SortBy == "name")">Name</option>
+                                    <option value="date" selected="@(Model.SortBy == "date")">Latest</option>
+                                    <option value="price" selected="@(Model.SortBy == "price")">Price</option>
+                                </select>
+                            </div>
+
+                            <!-- Sort direction as toggle buttons -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold d-block">Direction</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="ascending" id="sortAsc" value="true"
+                                    @(Model.Ascending ? "checked" : "")>
+                                    <label class="btn btn-outline-primary" for="sortAsc">
+                                        <i class="bi bi-sort-up me-1"></i>Ascending
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="ascending" id="sortDesc" value="false"
+                                    @(!Model.Ascending ? "checked" : "")>
+                                    <label class="btn btn-outline-primary" for="sortDesc">
+                                        <i class="bi bi-sort-down me-1"></i>Descending
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-sliders me-2"></i>Apply Filters
+                            </button>
+
+                            <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100 mt-2">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right content - Product cards (7/10 width) -->
+        <!-- Right content - Product cards with improved grid system -->
         <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Products</h2>
-                <div>
-                    Showing @(((Model.CurrentPage - 1) * Model.PageSize) + 1) to
-                    @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) of @Model.TotalCount results
-                </div>
-            </div>
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold mb-3 mb-sm-0"><i class="bi bi-grid-3x3-gap me-2"></i>Products</h2>
+                        <div class="bg-light py-2 px-3 rounded-pill d-flex align-items-center">
+                            <i class="bi bi-info-circle me-2 text-primary"></i>
+                            <span>
+                                Showing @(((Model.CurrentPage - 1) * Model.PageSize) + 1) to
+                                @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) of @Model.TotalCount results
+                            </span>
+                        </div>
+                    </div>
 
-            <div id="productGrid">
-                <!-- This will be updated by AJAX for search -->
-                @await Html.PartialAsync("_ProductGrid", Model)
+                    <div id="productGrid" class="products-container" style="min-height: 300px;">
+                        <!-- This will be updated by AJAX for search -->
+                        @await Html.PartialAsync("_ProductGrid", Model)
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
+    /* Product card styling */
     .product-image {
         height: 200px;
         object-fit: contain;
@@ -89,13 +133,22 @@
     }
 
     .product-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: 0;
+        transition: all 0.3s ease;
     }
 
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
+
+            .product-card:hover .product-image {
+                transform: scale(1.05);
+            }
+
+
 </style>
 
 @section Scripts {
@@ -115,10 +168,17 @@
             const searchTerm = $('#searchTerm').val();
             const categoryId = $('#categoryId').val();
             const sortBy = $('#sortBy').val();
-            const ascending = $('#ascending').is(':checked');
+            const ascending = $('input[name="ascending"]:checked').val() === 'true';
 
-            // Show loading indicator
-            $('#productGrid').html('<div class="text-center my-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+            // Show enhanced loading indicator using Bootstrap spinner
+            $('#productGrid').html(`
+                <div class="d-flex flex-column justify-content-center align-items-center my-5">
+                    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted mt-3">Finding the best products for you...</p>
+                </div>
+            `);
 
             // Make AJAX request
             $.ajax({
@@ -133,7 +193,11 @@
                 },
                 type: 'GET',
                 success: function(result) {
-                    $('#productGrid').html(result);
+                    // Fade effect for smoother transition
+                    $('#productGrid').fadeOut(100, function() {
+                        $(this).html(result).fadeIn(200);
+                    });
+
                     // Update URL for better sharability without page reload
                     const url = new URL(window.location);
                     url.searchParams.set('searchTerm', searchTerm || '');
@@ -143,7 +207,12 @@
                     window.history.replaceState({}, '', url);
                 },
                 error: function() {
-                    $('#productGrid').html('<div class="alert alert-danger">Error loading products. Please try again.</div>');
+                    $('#productGrid').html(`
+                        <div class="alert alert-danger d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div>Error loading products. Please try again.</div>
+                        </div>
+                    `);
                 }
             });
         }
@@ -160,12 +229,38 @@
 
             // Sort options with immediate search
             $('#sortBy').on('change', performSearch);
-            $('#ascending').on('change', performSearch);
+            $('input[name="ascending"]').on('change', performSearch);
 
             // Prevent form submission (we're handling via AJAX)
             $('#filterForm').on('submit', function(e) {
                 e.preventDefault();
                 performSearch();
+            });
+
+            // Reset filters with visual feedback
+            $('#resetFilters').on('click', function() {
+                $(this).addClass('btn-loading').html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Resetting...');
+
+                $('#searchTerm').val('');
+                $('#categoryId').val('');
+                $('#sortBy').val('name');
+                $('#sortAsc').prop('checked', true);
+
+                setTimeout(() => {
+                    performSearch();
+                    $(this).removeClass('btn-loading').html('<i class="bi bi-arrow-counterclockwise me-2"></i>Reset');
+                }, 300);
+            });
+
+            // Add tooltip initialization
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Make cards clickable
+            $('.product-card').on('click', function() {
+                const url = $(this).find('a').attr('href');
+                if (url) {
+                    window.location = url;
+                }
             });
         });
     </script>

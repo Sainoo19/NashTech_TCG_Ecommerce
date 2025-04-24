@@ -1,8 +1,13 @@
-﻿<!-- Index.cshtml in Views/ShoppingCart/ -->
-@model NashTech_TCG_ShareViewModels.ViewModels.CartViewModel
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.CartViewModel
 
 @{
     ViewData["Title"] = "Shopping Cart";
+
+    // Helper function to format price in Vietnamese style
+    string FormatVNPrice(decimal price)
+    {
+        return price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".") + "đ";
+    }
 }
 
 <div class="container mt-4">
@@ -66,7 +71,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>$@item.Price.ToString("0.00")</td>
+                                            <td data-price="@item.Price.ToString("0.00")">@FormatVNPrice(item.Price)</td>
                                             <td>
                                                 <form class="update-cart-form d-flex align-items-center" data-cartitemid="@item.CartItemId">
                                                     <input type="hidden" name="CartItemId" value="@item.CartItemId" />
@@ -77,7 +82,7 @@
                                                     </div>
                                                 </form>
                                             </td>
-                                            <td class="subtotal">$@item.Subtotal.ToString("0.00")</td>
+                                            <td class="subtotal" data-subtotal="@item.Subtotal.ToString("0.00")">@FormatVNPrice(item.Subtotal)</td>
                                             <td>
                                                 <form asp-action="RemoveCartItem" asp-controller="ShoppingCart" method="post" class="d-inline remove-item-form" data-cartitemid="@item.CartItemId">
                                                     <input type="hidden" name="cartItemId" value="@item.CartItemId" />
@@ -114,12 +119,12 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
-                            <span class="fw-bold">$@Model.TotalPrice.ToString("0.00")</span>
+                            <span class="fw-bold">@FormatVNPrice(Model.TotalPrice)</span>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total:</span>
-                            <span class="fw-bold fs-5 text-primary">$@Model.TotalPrice.ToString("0.00")</span>
+                            <span class="fw-bold fs-5 text-primary">@FormatVNPrice(Model.TotalPrice)</span>
                         </div>
                         <a href="#" class="btn btn-primary w-100">
                             <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
@@ -154,6 +159,11 @@
 
 @section Scripts {
     <script>
+        // Helper function to format VND price
+        function formatVNPrice(price) {
+            return parseInt(price).toLocaleString('en-US').replace(/,/g, '.') + 'đ';
+        }
+
         $(document).ready(function () {
             // Update quantity with plus/minus buttons
             $('.quantity-btn').click(function () {
@@ -193,8 +203,9 @@
                         if (result.success) {
                             // Update the price display
                             const row = $(`#cart-item-${cartItemId}`);
-                            const subtotal = (result.item.price * result.item.quantity).toFixed(2);
-                            row.find('.subtotal').text('$' + subtotal);
+                            const subtotal = result.item.price * result.item.quantity;
+                            row.find('.subtotal').attr('data-subtotal', subtotal.toFixed(2))
+                                .text(formatVNPrice(subtotal));
 
                             // Update the total price and item count
                             updateOrderSummary();
@@ -271,17 +282,17 @@
 
                 // Sum up all subtotals
                 $('table tbody tr').each(function () {
-                    const subtotalText = $(this).find('.subtotal').text().substring(1);
-                    const subtotal = parseFloat(subtotalText);
+                    const subtotal = parseFloat($(this).find('.subtotal').attr('data-subtotal'));
                     const quantity = parseInt($(this).find('.quantity-input').val());
 
                     totalPrice += subtotal;
                     totalItems += quantity;
                 });
 
-                // Update the order summary
-                $('.card-body .fw-bold.fs-5.text-primary').text('$' + totalPrice.toFixed(2));
-                $('.card-body .fw-bold:not(.fs-5)').text('$' + totalPrice.toFixed(2));
+                // Update the order summary with Vietnamese format
+                $('.card-body .fw-bold.fs-5.text-primary').attr('data-total', totalPrice.toFixed(2))
+                    .text(formatVNPrice(totalPrice));
+                $('.card-body .fw-bold:not(.fs-5)').text(formatVNPrice(totalPrice));
                 $('.card-header h5').text(`Cart Items (${totalItems})`);
             }
         });
