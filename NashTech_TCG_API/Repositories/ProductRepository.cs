@@ -127,6 +127,32 @@ namespace NashTech_TCG_API.Repositories
             }
         }
 
+        public async Task<IEnumerable<Product>> GetRelatedProductsByCategoryAsync(string productId, int limit = 5)
+        {
+            try
+            {
+                // Find the product to get its category
+                var product = await _dbContext.Products.FindAsync(productId);
+                if (product == null)
+                {
+                    throw new ArgumentException($"Product with ID {productId} not found", nameof(productId));
+                }
+
+                // Get random products from the same category, excluding the original product
+                var relatedProducts = await _dbContext.Products
+                    .Include(p => p.Category)
+                    .Where(p => p.CategoryId == product.CategoryId && p.ProductId != productId)
+                    .OrderBy(p => Guid.NewGuid()) // Random ordering
+                    .Take(limit)
+                    .ToListAsync();
+
+                return relatedProducts;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving related products for product {productId}", ex);
+            }
+        }
 
 
     }

@@ -1,11 +1,12 @@
-﻿@model IEnumerable<NashTech_TCG_ShareViewModels.ViewModels.ProductViewModel>
+﻿@* Create a new file: ../NashTech_TCG_MVC/Views/Shared/_BestSellingProductsSlider.cshtml *@
+@model IEnumerable<NashTech_TCG_ShareViewModels.ViewModels.ProductViewModel>
 
-<div class="top-products-slider">
-    <h3 class="category-name mb-3">@ViewBag.SelectedCategoryName Top Products</h3>
+<div class="best-products-slider">
+    <h3 class="category-name mb-3">Best Selling Products</h3>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">No products found for this category</div>
+        <div class="alert alert-info">No best selling products found</div>
     }
     else
     {
@@ -25,10 +26,10 @@
                                     <img src="/images/placeholder.png" class="card-img-top product-image" alt="No Image">
                                 }
 
-                                <!-- Rating badge -->
+                                <!-- Best Seller badge -->
                                 <div class="position-absolute top-0 end-0 p-2">
-                                    <span class="badge bg-primary">
-                                        <i class="bi bi-star-fill"></i> @product.AverageRating.ToString("0.0")
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-trophy"></i> Best Seller
                                     </span>
                                 </div>
                             </div>
@@ -48,50 +49,8 @@
     }
 </div>
 
-<script>
-    // Use setTimeout to ensure the DOM is fully updated before initializing
-    setTimeout(function() {
-        // Get the specific slider in this partial view
-        var currentSlider = $('.top-products-slider .product-slider');
-
-        // Check if this specific slider is already initialized and destroy it if needed
-        if (currentSlider.hasClass('slick-initialized')) {
-            currentSlider.slick('unslick');
-        }
-
-        // Initialize the slider with a slight delay
-        currentSlider.slick({
-            slidesToShow: 4,
-            slidesToScroll: 1,
-            arrows: true,
-            dots: false,
-            infinite: false,
-            responsive: [
-                {
-                    breakpoint: 1200,
-                    settings: {
-                        slidesToShow: 3
-                    }
-                },
-                {
-                    breakpoint: 992,
-                    settings: {
-                        slidesToShow: 2
-                    }
-                },
-                {
-                    breakpoint: 576,
-                    settings: {
-                        slidesToShow: 1
-                    }
-                }
-            ]
-        });
-    }, 100); // Small delay to ensure DOM is ready
-</script>
-
 <style>
-    /* Product card styles matching Product Index */
+   
     .product-image {
         height: 200px;
         object-fit: contain;

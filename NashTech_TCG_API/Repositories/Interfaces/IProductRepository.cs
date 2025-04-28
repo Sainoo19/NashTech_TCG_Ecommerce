@@ -13,6 +13,7 @@ namespace NashTech_TCG_API.Repositories.Interfaces
             bool ascending = true);
         
         Task<IEnumerable<Product>> GetTopRatedProductsByCategoryAsync(string categoryId,int limit = 8);
+        Task<IEnumerable<Product>> GetRelatedProductsByCategoryAsync(string productId, int limit = 5);
 
     }
 }

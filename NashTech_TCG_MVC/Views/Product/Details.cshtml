@@ -52,7 +52,7 @@
         <div class="row g-0">
             <!-- Product Image Section -->
             <div class="col-lg-6 bg-light position-relative">
-                
+
                 <div class="position-absolute top-0 end-0 m-3">
                     <span class="badge bg-primary p-2 rounded-pill">
                         <i class="bi bi-award-fill me-1"></i>TCG Exclusive
@@ -72,7 +72,6 @@
                     }
                 </div>
             </div>
-
 
             <!-- Product Info Section -->
             <div class="col-lg-6">
@@ -261,33 +260,13 @@
             </a>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-            <!-- Placeholder related products - would be populated from controller -->
-            @for (int i = 1; i <= 4; i++)
-            {
-                <div class="col">
-                    <div class="card h-100 border-0 shadow-sm">
-                        @if (i == 1)
-                        {
-                            <div class="position-relative">
-                                <img src="/images/placeholder.png" class="card-img-top" style="height: 180px; object-fit: contain; padding: 1rem;" alt="Related Product">
-                                <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-danger">New</span>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <img src="/images/placeholder.png" class="card-img-top" style="height: 180px; object-fit: contain; padding: 1rem;" alt="Related Product">
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title text-truncate">Related Product @i</h5>
-                            <p class="card-text text-truncate">Same category</p>
-                            <p class="card-text fw-bold text-primary">@(15 + i * 5).999đ</p>
-                        </div>
-                    </div>
+        <div id="relatedProductsContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-            }
+                <p class="mt-2">Loading related products...</p>
+            </div>
         </div>
     </section>
 </div>
@@ -355,17 +334,20 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Initialize toasts and tooltips
             var toastElements = document.querySelectorAll('.toast');
-            toastElements.forEach(function (toastEl) {
+            toastElements.forEach(function(toastEl) {
                 new bootstrap.Toast(toastEl).show();
             });
 
             var tooltipTriggerList = document.querySelectorAll('[title]');
-            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            tooltipTriggerList.forEach(function(tooltipTriggerEl) {
                 new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            // Load related products
+            loadRelatedProducts();
 
             // Initialize review modal
             var reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
@@ -427,7 +409,7 @@
                     }
                 } else {
                     // Reset price and hide stock info
-                    $("#priceDisplay").text("@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")đ");
+                    $("#priceDisplay").text("@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")");
                     $("#stockInfo").addClass("d-none");
                 }
             });
@@ -632,6 +614,58 @@
                 if (tab.length) {
                     new bootstrap.Tab(tab[0]).show();
                 }
+            }
+
+            // Function to load related products
+            function loadRelatedProducts() {
+                $.ajax({
+                    url: '@Url.Action("GetRelatedProducts", "Product")',
+                    type: 'GET',
+                    data: { productId: '@Model.ProductId' },
+                    success: function(result) {
+                        $('#relatedProductsContainer').html(result);
+                        // Check if Slick is defined before initializing
+                        if (typeof $.fn.slick !== 'undefined') {
+                            // Initialize slider for related products if not already initialized
+                            if ($('#relatedProductsContainer .product-slider:not(.slick-initialized)').length > 0) {
+                                $('#relatedProductsContainer .product-slider').slick({
+                                    slidesToShow: 4,
+                                    slidesToScroll: 1,
+                                    arrows: true,
+                                    dots: false,
+                                    infinite: false,
+                                    responsive: [
+                                        {
+                                            breakpoint: 1200,
+                                            settings: {
+                                                slidesToShow: 3
+                                            }
+                                        },
+                                        {
+                                            breakpoint: 992,
+                                            settings: {
+                                                slidesToShow: 2
+                                            }
+                                        },
+                                        {
+                                            breakpoint: 576,
+                                            settings: {
+                                                slidesToShow: 1
+                                            }
+                                        }
+                                    ]
+                                });
+                                console.log('Related products slider initialized');
+                            }
+                        } else {
+                            console.error('Slick carousel plugin is not loaded');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error loading related products:', error);
+                        $('#relatedProductsContainer').html('<div class="alert alert-danger">Failed to load related products</div>');
+                    }
+                });
             }
         });
     </script>

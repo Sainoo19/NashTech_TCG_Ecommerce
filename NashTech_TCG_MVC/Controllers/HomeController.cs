@@ -9,13 +9,16 @@ namespace NashTech_TCG_MVC.Controllers
     public class HomeController : Controller
     {
         private readonly IHomeService _homeService;
+        private readonly IProductService _productService; // Add this field
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(IHomeService homeService, ILogger<HomeController> logger)
+        public HomeController(IHomeService homeService, IProductService productService, ILogger<HomeController> logger)
         {
             _homeService = homeService;
+            _productService = productService; // Initialize it
             _logger = logger;
         }
+
 
         public async Task<IActionResult> Index()
         {
@@ -101,5 +104,28 @@ namespace NashTech_TCG_MVC.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public async Task<IActionResult> GetBestSellingProducts()
+        {
+            try
+            {
+                var (success, message, products) = await _productService.GetBestSellingProductsAsync();
+
+                if (!success)
+                {
+                    _logger.LogWarning($"Failed to retrieve best selling products: {message}");
+                    return PartialView("_ErrorPartial", message);
+                }
+
+                return PartialView("_BestSellingProductsSlider", products);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving best selling products");
+                return PartialView("_ErrorPartial", "An error occurred while retrieving best selling products.");
+            }
+        }
+
+
     }
 }

@@ -273,6 +273,104 @@ namespace NashTech_TCG_MVC.Services
             }
         }
 
+        public async Task<(bool Success, string Message, IEnumerable<ProductViewModel> Data)> GetBestSellingProductsAsync(int limit = 8)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("API");
+
+                // Add authorization token if available
+                var token = _httpContextAccessor.HttpContext.Session.GetString("AccessToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                // Set a reasonable limit
+                if (limit <= 0 || limit > 20)
+                    limit = 8;
+
+                _logger.LogInformation($"Requesting best selling products from API with limit: {limit}");
+                var response = await client.GetAsync($"api/product/best-selling?limit={limit}");
+
+                var content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<ProductViewModel>>>(content, options);
+
+                    if (apiResponse.Success)
+                    {
+                        _logger.LogInformation($"Successfully retrieved {apiResponse.Data?.Count() ?? 0} best selling products");
+                        return (true, "Best selling products retrieved successfully", apiResponse.Data);
+                    }
+
+                    _logger.LogWarning($"API returned error: {apiResponse.Message}");
+                    return (false, apiResponse.Message, null);
+                }
+
+                _logger.LogWarning($"API request failed with status {response.StatusCode}: {content}");
+                return (false, $"Failed to retrieve best selling products: {response.StatusCode}", null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving best selling products from API");
+                return (false, $"An error occurred: {ex.Message}", null);
+            }
+        }
+
+        
+        public async Task<(bool Success, string Message, IEnumerable<ProductViewModel> Data)> GetRelatedProductsAsync(string productId, int limit = 5)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(productId))
+                {
+                    return (false, "Product ID cannot be empty", null);
+                }
+
+                var client = _httpClientFactory.CreateClient("API");
+
+                // Add authorization token if available
+                var token = _httpContextAccessor.HttpContext.Session.GetString("AccessToken");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                // Set a reasonable limit
+                if (limit <= 0 || limit > 20)
+                    limit = 5;
+
+                _logger.LogInformation($"Requesting related products for product ID: {productId} with limit: {limit}");
+                var response = await client.GetAsync($"api/product/related/{productId}?limit={limit}");
+
+                var content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<ProductViewModel>>>(content, options);
+
+                    if (apiResponse.Success)
+                    {
+                        _logger.LogInformation($"Successfully retrieved {apiResponse.Data?.Count() ?? 0} related products");
+                        return (true, "Related products retrieved successfully", apiResponse.Data);
+                    }
+
+                    _logger.LogWarning($"API returned error: {apiResponse.Message}");
+                    return (false, apiResponse.Message, null);
+                }
+
+                _logger.LogWarning($"API request failed with status {response.StatusCode}: {content}");
+                return (false, $"Failed to retrieve related products: {response.StatusCode}", null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving related products for product {productId} from API");
+                return (false, $"An error occurred: {ex.Message}", null);
+            }
+        }
+
 
 
 

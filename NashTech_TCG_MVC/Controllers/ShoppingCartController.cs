@@ -10,10 +10,12 @@ namespace NashTech_TCG_MVC.Controllers
     public class ShoppingCartController : Controller
     {
         private readonly ICartService _cartService;
+        private readonly IOrderService _orderService;
 
-        public ShoppingCartController(ICartService cartService)
+        public ShoppingCartController(ICartService cartService, IOrderService orderService)
         {
             _cartService = cartService;
+            _orderService = orderService;
         }
 
         public async Task<IActionResult> Index()
@@ -151,5 +153,102 @@ namespace NashTech_TCG_MVC.Controllers
             return Json(new { success = false, count = 0 });
         }
 
+        
+        [HttpGet]
+        public async Task<IActionResult> Checkout()
+        {
+            var cartResult = await _cartService.GetCartAsync();
+
+            if (!cartResult.Success)
+            {
+                TempData["ErrorMessage"] = cartResult.Message;
+                return RedirectToAction("Index");
+            }
+
+            if (cartResult.Data == null || !cartResult.Data.Items.Any())
+            {
+                TempData["ErrorMessage"] = "Your cart is empty";
+                return RedirectToAction("Index");
+            }
+
+            var checkoutViewModel = new CheckoutViewModel
+            {
+                Cart = cartResult.Data,
+                ShippingAddress = new ShippingAddressViewModel()
+            };
+
+            return View(checkoutViewModel);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> PlaceOrder(PlaceOrderViewModel model)
+        {
+            // Kiểm tra model trước khi gửi đến API
+            Console.WriteLine($"ShippingAddress is null? {model.ShippingAddress == null}");
+            Console.WriteLine($"PaymentMethod: {model.PaymentMethod}");
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                Console.WriteLine($"ModelState errors: {string.Join(", ", errors)}");
+
+                var cartResult = await _cartService.GetCartAsync();
+                var checkoutViewModel = new CheckoutViewModel
+                {
+                    Cart = cartResult.Data,
+                    ShippingAddress = model.ShippingAddress,
+                    PaymentMethod = model.PaymentMethod
+                };
+
+                return View("Checkout", checkoutViewModel);
+            }
+
+            var result = await _orderService.PlaceOrderAsync(model);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Message;
+                return RedirectToAction("Checkout");
+            }
+
+            if (model.PaymentMethod == "VNPay")
+            {
+                return RedirectToAction("VNPayCheckout", new { orderId = result.OrderId });
+            }
+
+            TempData["SuccessMessage"] = "Your order has been placed successfully!";
+            return RedirectToAction("OrderConfirmation", new { orderId = result.OrderId });
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> OrderConfirmation(string orderId)
+        {
+            var orderResult = await _orderService.GetOrderByIdAsync(orderId);
+
+            if (!orderResult.Success)
+            {
+                TempData["ErrorMessage"] = orderResult.Message;
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(orderResult.Data);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult VNPayCheckout(string orderId)
+        {
+            // This will be implemented in the future
+            // For now, just redirect to order confirmation
+            TempData["SuccessMessage"] = "Payment simulation complete. VNPay integration will be implemented soon.";
+            return RedirectToAction("OrderConfirmation", new { orderId = orderId });
+        }
     }
 }

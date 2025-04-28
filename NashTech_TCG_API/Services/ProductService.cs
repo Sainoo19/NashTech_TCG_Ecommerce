@@ -18,13 +18,16 @@ namespace NashTech_TCG_API.Services
         private readonly IdGenerator _idGenerator;
         private readonly ILogger<ProductService> _logger;
         private readonly IFirebaseStorageService _firebaseStorage;
+        private readonly IOrderRepository _orderRepository;
 
+        
         public ProductService(
             IProductRepository productRepository,
             ICategoryRepository categoryRepository,
             IProductVariantRepository productVariantRepository,
-            IRarityRepository rarityRepository, // Add this
-            IProductRatingRepository productRatingRepository, // Add this
+            IRarityRepository rarityRepository,
+            IProductRatingRepository productRatingRepository,
+            IOrderRepository orderRepository, 
             IdGenerator idGenerator,
             ILogger<ProductService> logger,
             IFirebaseStorageService firebaseStorage)
@@ -32,8 +35,9 @@ namespace NashTech_TCG_API.Services
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _productVariantRepository = productVariantRepository;
-            _rarityRepository = rarityRepository; // Initialize this
-            _productRatingRepository = productRatingRepository; // Initialize this
+            _rarityRepository = rarityRepository;
+            _productRatingRepository = productRatingRepository;
+            _orderRepository = orderRepository; 
             _idGenerator = idGenerator;
             _logger = logger;
             _firebaseStorage = firebaseStorage;
@@ -210,12 +214,17 @@ namespace NashTech_TCG_API.Services
                 product.ImageUrl = newImageUrl;
                 _logger.LogInformation($"Image updated for product {id}. New URL: {newImageUrl}");
             }
-            //// If no new image but a URL is provided in the DTO, use that
-            //else if (!string.IsNullOrEmpty(productDTO.ImageUrl))
-            //{
-            //    product.ImageUrl = productDTO.ImageUrl;
-            //}
-            //// Otherwise keep the existing image
+            // If no new image but a URL is provided in the DTO, use that
+            else if (!string.IsNullOrEmpty(productDTO.ImageUrl))
+            {
+                // Only update if the URL is different from the current one
+                if (product.ImageUrl != productDTO.ImageUrl)
+                {
+                    product.ImageUrl = productDTO.ImageUrl;
+                    _logger.LogInformation($"Image URL updated for product {id} without file upload");
+                }
+            }
+            // Otherwise keep the existing image (no change needed)
 
             product.Name = productDTO.Name;
             product.CategoryId = productDTO.CategoryId;
@@ -228,6 +237,8 @@ namespace NashTech_TCG_API.Services
             _logger.LogInformation($"Updated product: {id}");
             return await MapToDTO(product);
         }
+
+
 
         public async Task<bool> DeleteProductAsync(string id)
         {
@@ -587,6 +598,124 @@ namespace NashTech_TCG_API.Services
             }
         }
 
+        public async Task<IEnumerable<ProductViewModel>> GetRelatedProductsAsync(string productId, int limit = 5)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(productId))
+                {
+                    _logger.LogWarning("Product ID is required");
+                    return Enumerable.Empty<ProductViewModel>();
+                }
+
+                var products = await _productRepository.GetRelatedProductsByCategoryAsync(productId, limit);
+
+                // Transform to view models
+                var productViewModels = new List<ProductViewModel>();
+
+                foreach (var product in products)
+                {
+                    // Get variants for price calculation
+                    var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+                    // Calculate min/max price
+                    decimal? minPrice = null;
+                    decimal? maxPrice = null;
+                    if (variants.Any())
+                    {
+                        minPrice = variants.Min(v => v.Price);
+                        maxPrice = variants.Max(v => v.Price);
+                    }
+
+                    double averageRating = 0;
+                    if (product.ProductRatings.Any())
+                    {
+                        averageRating = product.ProductRatings.Average(r => r.Rating);
+                    }
+
+                    var viewModel = new ProductViewModel
+                    {
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        CategoryName = product.Category?.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        MinPrice = minPrice,
+                        MaxPrice = maxPrice,
+                        CreatedDate = product.CreatedDate,
+                        AverageRating = Math.Round(averageRating, 1),
+                        RatingCount = product.ProductRatings.Count
+                    };
+
+                    productViewModels.Add(viewModel);
+                }
+
+                _logger.LogInformation($"Retrieved {productViewModels.Count} related products for product {productId}");
+                return productViewModels;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving related products for product {productId}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<ProductViewModel>> GetBestSellingProductsAsync(int limit = 8)
+        {
+            try
+            {
+                var products = await _orderRepository.GetBestSellingProductsAsync(limit);
+
+                // Transform to view models
+                var productViewModels = new List<ProductViewModel>();
+
+                foreach (var product in products)
+                {
+                    // Get variants for price calculation
+                    var variants = await _productVariantRepository.GetVariantsByProductIdAsync(product.ProductId);
+
+                    // Calculate min/max price
+                    decimal? minPrice = null;
+                    decimal? maxPrice = null;
+                    if (variants.Any())
+                    {
+                        minPrice = variants.Min(v => v.Price);
+                        maxPrice = variants.Max(v => v.Price);
+                    }
+                    double averageRating = 0;
+                    if (product.ProductRatings.Any())
+                    {
+                        averageRating = product.ProductRatings.Average(r => r.Rating);
+                    }
+
+                    var viewModel = new ProductViewModel
+                    {
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        CategoryId = product.CategoryId,
+                        CategoryName = product.Category?.Name,
+                        Description = product.Description,
+                        ImageUrl = product.ImageUrl,
+                        MinPrice = minPrice,
+                        MaxPrice = maxPrice,
+                        CreatedDate = product.CreatedDate,
+                        AverageRating = Math.Round(averageRating, 1),
+                        RatingCount = product.ProductRatings.Count
+                    };
+
+                    productViewModels.Add(viewModel);
+                }
+
+                _logger.LogInformation($"Retrieved {productViewModels.Count} best selling products");
+                return productViewModels;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving best selling products");
+                throw;
+            }
+        }
 
 
 

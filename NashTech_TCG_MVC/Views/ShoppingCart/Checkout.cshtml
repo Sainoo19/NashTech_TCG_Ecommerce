@@ -1,0 +1,389 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+
+    // Helper function to format price in Vietnamese style
+    string FormatVNPrice(decimal price)
+    {
+        return price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".") + "đ";
+    }
+}
+
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4">Checkout</h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Shipping Address -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Shipping Address</h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addressModal">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </button>
+                </div>
+                <div class="card-body" id="shipping-address-display">
+                    @if (Model.ShippingAddress != null && !string.IsNullOrEmpty(Model.ShippingAddress.FullName))
+                    {
+                        <p><strong>@Model.ShippingAddress.FullName</strong></p>
+                        <p>@Model.ShippingAddress.PhoneNumber</p>
+                        <p>@Model.ShippingAddress.Email</p>
+                        <p>@Model.ShippingAddress.AddressLine</p>
+                        <p>@Model.ShippingAddress.City, @Model.ShippingAddress.Province, @Model.ShippingAddress.Country @Model.ShippingAddress.PostalCode</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No shipping address provided. Please add your shipping details.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Order Items (@Model.Cart.TotalItems)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0">Product</th>
+                                    <th class="border-top-0">Price</th>
+                                    <th class="border-top-0">Quantity</th>
+                                    <th class="border-top-0 text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Cart.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                                {
+                                                    <img src="@item.ProductImageUrl" alt="@item.ProductName" class="checkout-thumbnail me-3">
+                                                }
+                                                else
+                                                {
+                                                    <img src="/images/placeholder.png" alt="@item.ProductName" class="checkout-thumbnail me-3">
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0">@item.ProductName</h6>
+                                                    <small class="text-muted">@item.RarityName</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@FormatVNPrice(item.Price)</td>
+                                        <td>@item.Quantity</td>
+                                        <td class="text-end">@FormatVNPrice(item.Subtotal)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <div class="payment-methods">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="codPayment" value="COD" checked>
+                            <label class="form-check-label" for="codPayment">
+                                <div class="d-flex align-items-center">
+                                    <div class="payment-icon me-3 bg-light p-2 rounded">
+                                        <i class="bi bi-cash-coin fs-3 text-success"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold">Cash on Delivery (COD)</span>
+                                        <p class="text-muted mb-0 small">Pay when you receive your order</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="vnpayPayment" value="VNPay">
+                            <label class="form-check-label" for="vnpayPayment">
+                                <div class="d-flex align-items-center">
+                                    <div class="payment-icon me-3 bg-light p-2 rounded">
+                                        <img src="/images/vnpay-logo.png" alt="VNPay" height="30" onerror="this.onerror=null; this.src='https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR.png';">
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold">VNPay</span>
+                                        <p class="text-muted mb-0 small">Pay online with VNPay</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card shadow-sm sticky-md-top" style="top: 1rem;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal:</span>
+                        <span>@FormatVNPrice(Model.TotalAmount)</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Shipping:</span>
+                        <span>Free</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Total:</span>
+                        <span class="fw-bold fs-5 text-primary">@FormatVNPrice(Model.TotalAmount)</span>
+                    </div>
+
+                    <form id="place-order-form" asp-action="PlaceOrder" asp-controller="ShoppingCart" method="post">
+                        <!-- Hidden fields for shipping address -->
+                        <input type="hidden" asp-for="ShippingAddress.FullName" id="fullNameInput" />
+                        <input type="hidden" asp-for="ShippingAddress.PhoneNumber" id="phoneNumberInput" />
+                        <input type="hidden" asp-for="ShippingAddress.Email" id="emailInput" />
+                        <input type="hidden" asp-for="ShippingAddress.AddressLine" id="addressLineInput" />
+                        <input type="hidden" asp-for="ShippingAddress.City" id="cityInput" />
+                        <input type="hidden" asp-for="ShippingAddress.Province" id="provinceInput" />
+                        <input type="hidden" asp-for="ShippingAddress.PostalCode" id="postalCodeInput" />
+                        <input type="hidden" asp-for="ShippingAddress.Country" id="countryInput" value="Vietnam" />
+                        
+                        <!-- Hidden field for payment method -->
+                        <input type="hidden" name="PaymentMethod" id="paymentMethodInput" value="COD" />
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-2 place-order-btn" disabled>
+                            <i class="bi bi-check-circle me-2"></i>Place Order
+                        </button>
+                    </form>
+                    
+                    <a href="@Url.Action("Index", "ShoppingCart")" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addressModalLabel">Shipping Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="address-form">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-fullName" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="modal-fullName" required>
+                            <div class="invalid-feedback">Please enter your full name</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-phoneNumber" class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="modal-phoneNumber" required>
+                            <div class="invalid-feedback">Please enter a valid phone number</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal-email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="modal-email" required>
+                        <div class="invalid-feedback">Please enter a valid email</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal-addressLine" class="form-label">Address Line *</label>
+                        <input type="text" class="form-control" id="modal-addressLine" required>
+                        <div class="invalid-feedback">Please enter your address</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-city" class="form-label">City *</label>
+                            <input type="text" class="form-control" id="modal-city" required>
+                            <div class="invalid-feedback">Please enter your city</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-province" class="form-label">Province/State *</label>
+                            <input type="text" class="form-control" id="modal-province" required>
+                            <div class="invalid-feedback">Please enter your province or state</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-postalCode" class="form-label">ZIP/Postal Code</label>
+                            <input type="text" class="form-control" id="modal-postalCode">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal-country" class="form-label">Country *</label>
+                            <input type="text" class="form-control" id="modal-country" value="Vietnam" required>
+                            <div class="invalid-feedback">Please enter your country</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-address-btn">Save Address</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkout-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
+
+    .payment-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-check-label {
+        width: 100%;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .form-check-input:checked + .form-check-label {
+        background-color: #f0f8ff;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Helper function to format VND price
+        function formatVNPrice(price) {
+            return parseInt(price).toLocaleString('en-US').replace(/,/g, '.') + 'đ';
+        }
+
+        // Function to update the hidden fields and display
+        function updateShippingAddress() {
+            const fullName = $('#modal-fullName').val();
+            const phoneNumber = $('#modal-phoneNumber').val();
+            const email = $('#modal-email').val();
+            const addressLine = $('#modal-addressLine').val();
+            const city = $('#modal-city').val();
+            const province = $('#modal-province').val();
+            const postalCode = $('#modal-postalCode').val();
+            const country = $('#modal-country').val();
+
+            // Update hidden form fields
+            $('#fullNameInput').val(fullName);
+            $('#phoneNumberInput').val(phoneNumber);
+            $('#emailInput').val(email);
+            $('#addressLineInput').val(addressLine);
+            $('#cityInput').val(city);
+            $('#provinceInput').val(province);
+            $('#postalCodeInput').val(postalCode);
+            $('#countryInput').val(country);
+
+            // Update the display area
+            const html = `
+                <p><strong>${fullName}</strong></p>
+                <p>${phoneNumber}</p>
+                <p>${email}</p>
+                <p>${addressLine}</p>
+                <p>${city}, ${province}, ${country} ${postalCode}</p>
+            `;
+            $('#shipping-address-display').html(html);
+
+            // Enable the place order button if all required fields are filled
+            checkFormValidity();
+        }
+
+        // Function to check if the form is valid
+        function checkFormValidity() {
+            const requiredFields = [
+                $('#fullNameInput').val(),
+                $('#phoneNumberInput').val(),
+                $('#emailInput').val(),
+                $('#addressLineInput').val(),
+                $('#cityInput').val(),
+                $('#provinceInput').val(),
+                $('#countryInput').val()
+            ];
+
+            const isValid = requiredFields.every(field => field && field.trim() !== '');
+            $('.place-order-btn').prop('disabled', !isValid);
+        }
+
+        $(document).ready(function() {
+            // Initialize with any existing values
+            if ($('#fullNameInput').val()) {
+                $('#modal-fullName').val($('#fullNameInput').val());
+            }
+            if ($('#phoneNumberInput').val()) {
+                $('#modal-phoneNumber').val($('#phoneNumberInput').val());
+            }
+            if ($('#emailInput').val()) {
+                $('#modal-email').val($('#emailInput').val());
+            }
+            if ($('#addressLineInput').val()) {
+                $('#modal-addressLine').val($('#addressLineInput').val());
+            }
+            if ($('#cityInput').val()) {
+                $('#modal-city').val($('#cityInput').val());
+            }
+            if ($('#provinceInput').val()) {
+                $('#modal-province').val($('#provinceInput').val());
+            }
+            if ($('#postalCodeInput').val()) {
+                $('#modal-postalCode').val($('#postalCodeInput').val());
+            }
+            if ($('#countryInput').val()) {
+                $('#modal-country').val($('#countryInput').val());
+            }
+
+            // Handle saving the address
+            $('#save-address-btn').click(function() {
+                // Validate the form
+                const form = document.getElementById('address-form');
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                updateShippingAddress();
+                $('#addressModal').modal('hide');
+            });
+
+            // Handle payment method selection
+            $('input[name="paymentMethod"]').change(function() {
+                const paymentMethod = $(this).val();
+                $('#paymentMethodInput').val(paymentMethod);
+            });
+
+            // Check form validity on page load
+            checkFormValidity();
+
+            // Mark the form as needing validation
+            $('#address-form').addClass('needs-validation');
+        });
+    </script>
+}

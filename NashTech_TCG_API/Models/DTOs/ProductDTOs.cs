@@ -56,11 +56,10 @@ namespace NashTech_TCG_API.Models.DTOs
 
         public string Description { get; set; }
 
-        
+        public string ImageUrl { get; set; }
 
-        // Add file upload property
         [Display(Name = "Product Image")]
-        public IFormFile ImageFile { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class ProductFilterDTO

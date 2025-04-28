@@ -1,0 +1,139 @@
+﻿@model NashTech_TCG_ShareViewModels.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+
+    // Helper function to format price in Vietnamese style
+    string FormatVNPrice(decimal price)
+    {
+        return price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".") + "đ";
+    }
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="text-center mb-4">
+        <i class="bi bi-check-circle-fill text-success display-1"></i>
+        <h1 class="mt-3">Thank You for Your Order!</h1>
+        <p class="lead text-muted">Your order has been received and is being processed.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Order Information</h5>
+                        <span class="badge bg-success">@Model.Status</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">Order Number</small>
+                            <p class="mb-0 fw-bold">@Model.OrderId</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">Order Date</small>
+                            <p class="mb-0">@Model.OrderDate.ToString("MMM dd, yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">Payment Method</small>
+                            <p class="mb-0">@Model.PaymentMethod</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted">Total Amount</small>
+                            <p class="mb-0 fw-bold text-primary">@FormatVNPrice(Model.TotalAmount)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Shipping Address</h5>
+                </div>
+                <div class="card-body">
+                    <p class="fw-bold mb-1">@Model.ShippingAddress.FullName</p>
+                    <p class="mb-1">@Model.ShippingAddress.PhoneNumber</p>
+                    <p class="mb-1">@Model.ShippingAddress.Email</p>
+                    <p class="mb-1">@Model.ShippingAddress.AddressLine</p>
+                    <p class="mb-0">@Model.ShippingAddress.City, @Model.ShippingAddress.Province, @Model.ShippingAddress.Country @Model.ShippingAddress.PostalCode</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Order Items</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0">Product</th>
+                                    <th class="border-top-0">Price</th>
+                                    <th class="border-top-0">Quantity</th>
+                                    <th class="border-top-0 text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                                {
+                                                    <img src="@item.ProductImageUrl" alt="@item.ProductName" class="checkout-thumbnail me-3">
+                                                }
+                                                else
+                                                {
+                                                    <img src="/images/placeholder.png" alt="@item.ProductName" class="checkout-thumbnail me-3">
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0">@item.ProductName</h6>
+                                                    <small class="text-muted">@item.RarityName</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@FormatVNPrice(item.UnitPrice)</td>
+                                        <td>@item.Quantity</td>
+                                        <td class="text-end">@FormatVNPrice(item.Subtotal)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total:</td>
+                                    <td class="text-end fw-bold">@FormatVNPrice(Model.TotalAmount)</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                    <i class="bi bi-house-door me-2"></i>Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkout-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
+</style>

@@ -48,7 +48,20 @@
         <h1 class="display-4 text-white text-shadow">Welcome Nashtech TCG</h1>
     </div>
 </div>
+<!-- Best Selling Products Section -->
+<div class="container mt-5">
+    <div class="best-selling-section">
+        <h2 class="section-title text-center mb-4">Best Selling Products</h2>
 
+        <div id="bestSellingProductsContainer">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Featured Products by Category Section -->
 <div class="container mt-5">
     <div class="featured-category-section">
@@ -114,11 +127,27 @@
                     }
                 });
             });
+            // Load best selling products
+            loadBestSellingProducts();
 
             // Initialize product slider on page load
             initProductSlider();
         });
-
+        function loadBestSellingProducts() {
+            $.ajax({
+                url: '@Url.Action("GetBestSellingProducts", "Home")',
+                type: 'GET',
+                success: function(result) {
+                    $('#bestSellingProductsContainer').html(result);
+                    // Initialize the best selling products slider
+                    initProductSlider();
+                },
+                error: function(error) {
+                    $('#bestSellingProductsContainer').html('<div class="alert alert-danger">Failed to load best selling products</div>');
+                    console.error('Error loading best selling products:', error);
+                }
+            });
+        }
         function initProductSlider() {
             // Initialize the product slider if it exists
             if ($('.product-slider').length) {

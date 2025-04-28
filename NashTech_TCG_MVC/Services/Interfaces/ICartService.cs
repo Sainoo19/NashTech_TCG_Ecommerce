@@ -9,5 +9,6 @@ namespace NashTech_TCG_MVC.Services.Interfaces
         Task<(bool Success, string Message, CartItemViewModel Data)> UpdateCartItemAsync(UpdateCartItemViewModel model);
         Task<(bool Success, string Message)> RemoveCartItemAsync(string cartItemId);
         Task<(bool Success, string Message)> ClearCartAsync();
+        
     }
 }

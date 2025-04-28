@@ -16,9 +16,12 @@ namespace NashTech_TCG_API.Models
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
         [Required(ErrorMessage = "Total amount is required")]
-        [Range(0, 1000000, ErrorMessage = "Total amount must be between 0 and 1,000,000")]
+        [Range(0, 100000000, ErrorMessage = "Total amount must be between 0 and 1,000,000")]
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }
+
+        [StringLength(20)]
+        public string? PaymentMethod { get; set; } = "COD";
 
         [Required(ErrorMessage = "Status is required")]
         [StringLength(50, ErrorMessage = "Status cannot exceed 50 characters")]

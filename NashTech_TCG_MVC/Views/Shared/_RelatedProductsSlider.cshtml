@@ -1,0 +1,130 @@
+﻿@model IEnumerable<NashTech_TCG_ShareViewModels.ViewModels.ProductViewModel>
+
+<div class="related-products-section mb-4">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No related products found</div>
+    }
+    else
+    {
+        <div class="product-slider">
+            @foreach (var product in Model)
+            {
+                <div class="px-2">
+                    <div class="card h-100 shadow-hover border-light mb-2">
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="text-decoration-none">
+                            <div class="position-relative">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" class="card-img-top p-3" style="height: 180px; object-fit: contain;" alt="@product.Name">
+                                }
+                                else
+                                {
+                                    <img src="/images/placeholder.png" class="card-img-top p-3" style="height: 180px; object-fit: contain;" alt="No Image">
+                                }
+
+                                @if (product.AverageRating > 0)
+                                {
+                                    <!-- Rating badge -->
+                                    <div class="position-absolute top-0 end-0 p-2">
+                                        <span class="badge bg-primary rounded-pill px-2 py-1">
+                                            <i class="bi bi-star-fill me-1"></i> @product.AverageRating.ToString("0.0")
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-body pb-4">
+                                <h6 class="card-title text-truncate fw-bold">@product.Name</h6>
+                                <p class="card-text small text-truncate text-muted mb-2">@product.CategoryName</p>
+                                @if (!string.IsNullOrEmpty(product.PriceRange))
+                                {
+                                    <p class="card-text fw-bold text-primary mb-0">@product.PriceRange</p>
+                                }
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* Add shared JS code for Slick initialization *@
+<script>
+    $(document).ready(function() {
+        if (typeof $.fn.slick !== 'undefined' && $('.product-slider').length > 0) {
+            $('.product-slider:not(.slick-initialized)').slick({
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                arrows: true,
+                dots: false,
+                infinite: false,
+                responsive: [
+                    {
+                        breakpoint: 1200,
+                        settings: {
+                            slidesToShow: 3
+                        }
+                    },
+                    {
+                        breakpoint: 992,
+                        settings: {
+                            slidesToShow: 2
+                        }
+                    },
+                    {
+                        breakpoint: 576,
+                        settings: {
+                            slidesToShow: 1
+                        }
+                    }
+                ]
+            });
+        }
+    });
+
+    // Add Bootstrap hover effects with JS instead of CSS
+    $(document).ready(function() {
+        $('.shadow-hover').hover(
+            function() {
+                $(this).addClass('shadow').css({
+                    'transform': 'translateY(-5px)',
+                    'transition': 'transform 0.2s ease, box-shadow 0.2s ease'
+                });
+            },
+            function() {
+                $(this).removeClass('shadow').css({
+                    'transform': 'translateY(0)',
+                    'transition': 'transform 0.2s ease, box-shadow 0.2s ease'
+                });
+            }
+        );
+    });
+</script>
+
+@* Add minimal required styling for slick arrows that cannot be handled by Bootstrap classes *@
+<style>
+    /* Required styling for Slick arrows - minimized to only what's necessary */
+    .product-slider .slick-prev,
+    .product-slider .slick-next {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        z-index: 1;
+    }
+
+    .product-slider .slick-prev {
+        left: -15px;
+    }
+
+    .product-slider .slick-next {
+        right: -15px;
+    }
+
+        .product-slider .slick-prev:before,
+        .product-slider .slick-next:before {
+            color: #4a47a3;
+        }
+</style>

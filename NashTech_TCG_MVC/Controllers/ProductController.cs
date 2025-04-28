@@ -222,6 +222,60 @@ namespace NashTech_TCG_MVC.Controllers
                 return RedirectToAction(nameof(Details), new { id = model.ProductId });
             }
         }
+        // Add/update this method in ../NashTech_TCG_MVC/Controllers/ProductController.cs
+        [HttpGet]
+        public async Task<IActionResult> GetRelatedProducts(string productId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(productId))
+                {
+                    _logger.LogWarning("GetRelatedProducts called with empty productId");
+                    return PartialView("_ErrorPartial", "Product ID is required");
+                }
+
+                _logger.LogInformation($"Getting related products for product ID: {productId}");
+
+                var (success, message, relatedProducts) = await _productService.GetRelatedProductsAsync(productId);
+
+                if (!success || relatedProducts == null)
+                {
+                    _logger.LogWarning($"Failed to retrieve related products: {message}");
+                    return PartialView("_ErrorPartial", message ?? "Failed to retrieve related products");
+                }
+
+                _logger.LogInformation($"Successfully retrieved {relatedProducts.Count()} related products");
+                return PartialView("_RelatedProductsSlider", relatedProducts);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving related products for product {productId}");
+                return PartialView("_ErrorPartial", "An error occurred while retrieving related products");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBestSellingProducts(int limit = 8)
+        {
+            try
+            {
+                var (success, message, data) = await _productService.GetBestSellingProductsAsync(limit);
+
+                if (!success || data == null)
+                {
+                    _logger.LogWarning($"Failed to retrieve best selling products: {message}");
+                    return PartialView("_ErrorPartial", message);
+                }
+
+                return PartialView("_BestSellingProductsSlider", data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving best selling products");
+                return PartialView("_ErrorPartial", "An error occurred while retrieving best selling products.");
+            }
+        }
+
     }
 
 }

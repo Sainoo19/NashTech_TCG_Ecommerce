@@ -140,7 +140,6 @@ namespace NashTech_TCG_API.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProduct(string id, [FromForm] UpdateProductDTO productDTO)
         {
@@ -157,9 +156,13 @@ namespace NashTech_TCG_API.Controllers
                 }
 
                 // Log image file details if present
-                if (productDTO.ImageFile != null)
+                if (productDTO.ImageFile != null && productDTO.ImageFile.Length > 0)
                 {
                     _logger.LogInformation($"Image file received for update: {productDTO.ImageFile.FileName}, Size: {productDTO.ImageFile.Length} bytes");
+                }
+                else
+                {
+                    _logger.LogInformation("No new image file received for update. Using existing image or URL.");
                 }
 
                 var updatedProduct = await _productService.UpdateProductAsync(id, productDTO);
@@ -175,6 +178,7 @@ namespace NashTech_TCG_API.Controllers
                 return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while updating product"));
             }
         }
+
 
         [HttpDelete("{id}")]
         [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
@@ -340,6 +344,56 @@ namespace NashTech_TCG_API.Controllers
             }
         }
 
+        [HttpGet("related/{productId}")]
+        public async Task<IActionResult> GetRelatedProducts(string productId, [FromQuery] int limit = 5)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(productId))
+                {
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Product ID is required"));
+                }
+
+                if (limit <= 0 || limit > 20) // Add reasonable limits
+                {
+                    limit = 5; // Default to 5 if invalid limit
+                }
+
+                var relatedProducts = await _productService.GetRelatedProductsAsync(productId, limit);
+
+                return Ok(ApiResponse<IEnumerable<ProductViewModel>>.SuccessResponse(
+                    relatedProducts,
+                    $"Related products for product {productId} retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving related products for product {productId}");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving related products"));
+            }
+        }
+
+        [HttpGet("best-selling")]
+        public async Task<IActionResult> GetBestSellingProducts([FromQuery] int limit = 8)
+        {
+            try
+            {
+                if (limit <= 0 || limit > 20) // Add reasonable limits
+                {
+                    limit = 8; // Default to 8 if invalid limit
+                }
+
+                var bestSellingProducts = await _productService.GetBestSellingProductsAsync(limit);
+
+                return Ok(ApiResponse<IEnumerable<ProductViewModel>>.SuccessResponse(
+                    bestSellingProducts,
+                    $"Top {limit} best selling products retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving best selling products");
+                return StatusCode(500, ApiResponse<object>.ErrorResponse("An error occurred while retrieving best selling products"));
+            }
+        }
 
     }
 }

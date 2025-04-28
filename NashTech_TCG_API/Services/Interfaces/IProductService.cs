@@ -33,5 +33,9 @@ namespace NashTech_TCG_API.Services.Interfaces
         Task<ProductViewModel> GetProductDetailsAsync(string id);
         Task<ProductRatingViewModel> AddProductRatingAsync(ProductRatingInputViewModel model, string userId);
         Task<IEnumerable<ProductViewModel>> GetTopRatedProductsByCategoryAsync(string categoryId, int limit = 8);
+        Task<IEnumerable<ProductViewModel>> GetRelatedProductsAsync(string productId, int limit = 5);
+        Task<IEnumerable<ProductViewModel>> GetBestSellingProductsAsync(int limit = 8);
+
+
     }
 }

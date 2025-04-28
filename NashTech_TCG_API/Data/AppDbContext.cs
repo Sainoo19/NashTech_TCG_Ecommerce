@@ -21,6 +21,8 @@ namespace NashTech_TCG_API.Data
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
         public DbSet<SequenceCounter> SequenceCounters { get; set; } = null!;
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -117,6 +119,13 @@ namespace NashTech_TCG_API.Data
                 .WithMany(pv => pv.OrderItems)
                 .HasForeignKey(oi => oi.VariantId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            builder.Entity<ShippingAddress>()
+                .HasOne(sa => sa.Order)
+                .WithMany()
+                .HasForeignKey(sa => sa.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

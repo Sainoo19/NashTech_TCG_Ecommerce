@@ -19,6 +19,8 @@ namespace NashTech_TCG_MVC.Services.Interfaces
         // Add to MVC IProductService.cs
         Task<(bool Success, string Message, ProductViewModel Data)> GetProductDetailsAsync(string id);
         Task<(bool Success, string Message, ProductRatingViewModel Data)> AddProductRatingAsync(ProductRatingInputViewModel model);
+        Task<(bool Success, string Message, IEnumerable<ProductViewModel> Data)> GetBestSellingProductsAsync(int limit = 8);
+        Task<(bool Success, string Message, IEnumerable<ProductViewModel> Data)> GetRelatedProductsAsync(string productId, int limit = 5);
 
     }
 }
