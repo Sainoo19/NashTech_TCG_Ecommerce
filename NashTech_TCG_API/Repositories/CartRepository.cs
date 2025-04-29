@@ -3,15 +3,16 @@ using NashTech_TCG_API.Data;
 using NashTech_TCG_API.Models;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 namespace NashTech_TCG_API.Repositories
 {
     public class CartRepository : ICartRepository
     {
         private readonly AppDbContext _context;
-        private readonly IdGenerator _idGenerator;
+        private readonly IIdGenerator _idGenerator;
 
-        public CartRepository(AppDbContext context, IdGenerator idGenerator)
+        public CartRepository(AppDbContext context, IIdGenerator idGenerator)
         {
             _context = context;
             _idGenerator = idGenerator;

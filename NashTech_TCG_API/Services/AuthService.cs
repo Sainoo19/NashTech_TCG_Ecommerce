@@ -17,6 +17,12 @@ namespace NashTech_TCG_API.Services
             _userRepository = userRepository;
         }
 
+        public async Task<ApplicationUser> GetUserByIdAsync(string userId)
+        {
+            return await _userRepository.GetByIdAsync(userId);
+        }
+
+
         public async Task<bool> RegisterUserAsync(RegisterViewModel model)
         {
             if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))

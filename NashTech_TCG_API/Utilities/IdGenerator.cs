@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NashTech_TCG_API.Data;
 using NashTech_TCG_API.Models;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 namespace NashTech_TCG_API.Utilities
 {
-    public class IdGenerator
+    public class IdGenerator : IIdGenerator
     {
         private readonly AppDbContext _context;
         private readonly ILogger<IdGenerator> _logger;

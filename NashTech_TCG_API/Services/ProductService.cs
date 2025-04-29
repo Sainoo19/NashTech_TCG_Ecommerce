@@ -5,6 +5,7 @@ using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
 using NashTech_TCG_ShareViewModels.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 namespace NashTech_TCG_API.Services
 {
@@ -15,29 +16,29 @@ namespace NashTech_TCG_API.Services
         private readonly IProductVariantRepository _productVariantRepository;
         private readonly IRarityRepository _rarityRepository; // Add this
         private readonly IProductRatingRepository _productRatingRepository; // Add this
-        private readonly IdGenerator _idGenerator;
+        private readonly IIdGenerator _idGenerator;
         private readonly ILogger<ProductService> _logger;
         private readonly IFirebaseStorageService _firebaseStorage;
         private readonly IOrderRepository _orderRepository;
 
-        
+
         public ProductService(
-            IProductRepository productRepository,
-            ICategoryRepository categoryRepository,
-            IProductVariantRepository productVariantRepository,
-            IRarityRepository rarityRepository,
-            IProductRatingRepository productRatingRepository,
-            IOrderRepository orderRepository, 
-            IdGenerator idGenerator,
-            ILogger<ProductService> logger,
-            IFirebaseStorageService firebaseStorage)
+           IProductRepository productRepository,
+           ICategoryRepository categoryRepository,
+           IProductVariantRepository productVariantRepository,
+           IRarityRepository rarityRepository,
+           IProductRatingRepository productRatingRepository,
+           IOrderRepository orderRepository,
+           IIdGenerator idGenerator, 
+           ILogger<ProductService> logger,
+           IFirebaseStorageService firebaseStorage)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _productVariantRepository = productVariantRepository;
             _rarityRepository = rarityRepository;
             _productRatingRepository = productRatingRepository;
-            _orderRepository = orderRepository; 
+            _orderRepository = orderRepository;
             _idGenerator = idGenerator;
             _logger = logger;
             _firebaseStorage = firebaseStorage;

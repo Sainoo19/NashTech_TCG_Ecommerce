@@ -13,5 +13,6 @@ namespace NashTech_TCG_API.Services.Interfaces
         Task<IList<string>> GetUserRolesByIdAsync(string userId);
         Task<IList<string>> GetUserRolesAsync(string email);
         Task<UserProfileViewModel> GetUserProfileAsync(string userId);
+        Task<ApplicationUser> GetUserByIdAsync(string userId);
     }
 }

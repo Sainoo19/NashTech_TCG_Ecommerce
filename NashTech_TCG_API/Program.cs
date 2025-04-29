@@ -10,6 +10,7 @@ using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,9 +107,10 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IIdGenerator, IdGenerator>();
 
 
-builder.Services.AddScoped<IdGenerator>();
+//builder.Services.AddScoped<IdGenerator>();
 
 
 // Register the DataSeeder service

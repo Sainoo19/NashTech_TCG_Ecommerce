@@ -3,18 +3,19 @@ using NashTech_TCG_API.Models;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 namespace NashTech_TCG_API.Services
 {
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        private readonly IdGenerator _idGenerator;
+        private readonly IIdGenerator _idGenerator;
         private readonly ILogger<CategoryService> _logger;
 
         public CategoryService(
             ICategoryRepository categoryRepository,
-            IdGenerator idGenerator,
+            IIdGenerator idGenerator,
             ILogger<CategoryService> logger)
         {
             _categoryRepository = categoryRepository;

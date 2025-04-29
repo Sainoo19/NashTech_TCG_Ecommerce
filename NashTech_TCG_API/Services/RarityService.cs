@@ -3,18 +3,19 @@ using NashTech_TCG_API.Models;
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_API.Utilities.Interfaces;
 
 namespace NashTech_TCG_API.Services
 {
     public class RarityService : IRarityService
     {
         private readonly IRarityRepository _rarityRepository;
-        private readonly IdGenerator _idGenerator;
+        private readonly IIdGenerator _idGenerator;
         private readonly ILogger<RarityService> _logger;
 
         public RarityService(
             IRarityRepository rarityRepository,
-            IdGenerator idGenerator,
+            IIdGenerator idGenerator,
             ILogger<RarityService> logger)
         {
             _rarityRepository = rarityRepository;

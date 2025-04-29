@@ -2,6 +2,7 @@
 using NashTech_TCG_API.Repositories.Interfaces;
 using NashTech_TCG_API.Services.Interfaces;
 using NashTech_TCG_API.Utilities;
+using NashTech_TCG_API.Utilities.Interfaces;
 using static NashTech_TCG_API.Models.DTOs.ProductVariantDTOs;
 
 namespace NashTech_TCG_API.Services
@@ -11,7 +12,7 @@ namespace NashTech_TCG_API.Services
         private readonly IProductVariantRepository _productVariantRepository;
         private readonly IProductRepository _productRepository;
         private readonly IRarityRepository _rarityRepository;
-        private readonly IdGenerator _idGenerator;
+        private readonly IIdGenerator _idGenerator;
         private readonly ILogger<ProductVariantService> _logger;
         private readonly IFirebaseStorageService _firebaseStorage;
 
@@ -19,7 +20,7 @@ namespace NashTech_TCG_API.Services
             IProductVariantRepository productVariantRepository,
             IProductRepository productRepository,
             IRarityRepository rarityRepository,
-            IdGenerator idGenerator,
+            IIdGenerator idGenerator,
             ILogger<ProductVariantService> logger,
             IFirebaseStorageService firebaseStorage)
         {

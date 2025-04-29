@@ -75,14 +75,13 @@ namespace NashTech_TCG_API.Controllers
         {
             try
             {
-
-
                 var request = HttpContext.GetOpenIddictServerRequest();
                 if (request == null)
                 {
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request: OpenIddict server request not found"));
                 }
 
+                // Handle password grant type (regular login)
                 if (request.IsPasswordGrantType())
                 {
                     var user = await _authService.ValidateUserAsync(request.Username, request.Password);
@@ -99,6 +98,45 @@ namespace NashTech_TCG_API.Controllers
                     return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
+                // Handle refresh token grant type
+                if (request.IsRefreshTokenGrantType())
+                {
+                    // Retrieve the claims principal stored in the refresh token
+                    var info = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+                    var principal = info?.Principal;
+
+                    if (principal == null)
+                    {
+                        return BadRequest(ApiResponse<object>.ErrorResponse(
+                            "The refresh token is no longer valid",
+                            (int)HttpStatusCode.BadRequest));
+                    }
+
+                    // Retrieve user ID from claims
+                    var userId = principal.FindFirstValue(Claims.Subject);
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return BadRequest(ApiResponse<object>.ErrorResponse(
+                            "The refresh token doesn't contain a valid user identifier",
+                            (int)HttpStatusCode.BadRequest));
+                    }
+
+                    // Look up the user in the database
+                    var user = await _authService.GetUserByIdAsync(userId);
+                    if (user == null)
+                    {
+                        return BadRequest(ApiResponse<object>.ErrorResponse(
+                            "The user no longer exists",
+                            (int)HttpStatusCode.BadRequest));
+                    }
+
+                    // Create a new principal with fresh claims
+                    var newPrincipal = await _authService.CreateClaimsPrincipalAsync(user);
+
+                    // Issue a new token
+                    return SignIn(newPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+                }
+
                 return BadRequest(ApiResponse<object>.ErrorResponse("The specified grant type is not supported"));
             }
             catch (Exception ex)
@@ -109,9 +147,6 @@ namespace NashTech_TCG_API.Controllers
                     (int)HttpStatusCode.InternalServerError));
             }
         }
-
-
-
 
         [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpGet("roles")]
