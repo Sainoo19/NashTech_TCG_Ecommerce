@@ -3,17 +3,338 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NashTech_TCG_MVC</title>
+    <title>@ViewData["Title"] - TCG Universe</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="~/NashTech_TCG_MVC.styles.css" asp-append-version="true" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Add Slick Slider CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NashTech_TCG_MVC.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Head", required: false)
 
+    <style>
+        :root {
+            --primary: #2e1a47;
+            --primary-light: #482a6a;
+            --secondary: #ff9d00;
+            --dark: #121212;
+            --light: #f8f5ff;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --border-color: #e0d5f0;
+            --success: #35b969;
+            --danger: #e63946;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+
+        /* Header/Navbar Styles */
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-dark.bg-primary {
+            background: var(--primary) !important;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+            transition: transform 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 157, 0, 0.5);
+        }
+
+        .navbar-brand:hover .logo {
+            transform: scale(1.05);
+        }
+
+        .navbar-brand::after {
+            content: 'TCG Universe';
+            margin-left: 12px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+        }
+
+        /* Navigation Menu */
+        .main-menu .nav-item {
+            position: relative;
+            margin: 0 5px;
+        }
+
+        .main-menu .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+            .main-menu .nav-link:hover,
+            .main-menu .nav-link:focus {
+                color: var(--text-light);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        /* User Menu */
+        .user-menu .nav-link {
+            color: var(--text-light) !important;
+        }
+
+        .user-dropdown {
+            color: var(--text-light) !important;
+            background-color: var(--primary-light);
+            border-radius: 20px;
+            padding: 6px 15px;
+            transition: all 0.3s ease;
+        }
+
+            .user-dropdown:hover {
+                background-color: var(--secondary);
+                color: var(--dark) !important;
+            }
+
+        .user-dropdown-menu {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            transition: all 0.2s;
+        }
+
+            .dropdown-item:hover {
+                background-color: var(--light);
+                padding-left: 20px;
+            }
+
+            .dropdown-item .bi {
+                color: var(--primary);
+            }
+
+        /* Auth Buttons */
+        .auth-buttons .btn {
+            border-radius: 20px;
+            padding: 0.375rem 1.2rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .auth-buttons .btn-outline-light {
+            border-width: 2px;
+        }
+
+        .auth-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-buttons .btn-light {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--dark);
+        }
+
+            .auth-buttons .btn-light:hover {
+                background-color: var(--secondary);
+                filter: brightness(110%);
+            }
+
+        /* Cart Badge */
+        .badge.bg-danger {
+            background-color: var(--secondary) !important;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        /* Footer Styles */
+        .main-footer {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            margin-top: 3rem;
+            border-top: 4px solid var(--secondary);
+        }
+
+        .footer-heading {
+            position: relative;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            color: var(--text-light);
+        }
+
+            .footer-heading::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 50px;
+                height: 2px;
+                background-color: var(--secondary);
+            }
+
+        .footer-text {
+            color: #bbb;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding-left: 0;
+        }
+
+            .footer-links li {
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-links a {
+                color: #ccc;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                display: inline-block;
+                position: relative;
+                padding-left: 15px;
+            }
+
+                .footer-links a::before {
+                    content: '→';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    opacity: 0;
+                    transition: all 0.3s ease;
+                    transform: translateX(-5px);
+                }
+
+                .footer-links a:hover {
+                    color: var(--secondary);
+                    transform: translateX(5px);
+                }
+
+                    .footer-links a:hover::before {
+                        opacity: 1;
+                        transform: translateX(0);
+                        color: var(--secondary);
+                    }
+
+        .footer-contact p {
+            color: #bbb;
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-contact .bi {
+            color: var(--secondary);
+        }
+
+        /* Social Icons */
+        .social-icons {
+            margin-top: 1.2rem;
+        }
+
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            margin-right: 0.8rem;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+            .social-icon:hover {
+                background-color: var(--secondary);
+                transform: translateY(-3px);
+                color: var(--dark);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+        /* Newsletter */
+        .newsletter-form .form-control {
+            border-radius: 20px 0 0 20px;
+            border: none;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 0 20px 20px 0;
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--dark);
+        }
+
+        .footer-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 2rem 0 1rem;
+        }
+
+        .copyright {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .payment-methods {
+            color: #999;
+        }
+
+            .payment-methods .bi {
+                background-color: rgba(255, 255, 255, 0.1);
+                padding: 5px;
+                border-radius: 4px;
+                margin-left: 5px;
+                font-size: 1rem;
+            }
+
+        /* Custom Button Styling for consistency */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+            .btn-primary:hover, .btn-primary:focus {
+                background-color: var(--primary-light);
+                border-color: var(--primary-light);
+            }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: var(--dark);
+        }
+
+            .btn-secondary:hover, .btn-secondary:focus {
+                background-color: var(--secondary);
+                filter: brightness(110%);
+                color: var(--dark);
+            }
+    </style>
 </head>
 <body>
     <header class="main-header shadow-sm">
@@ -21,8 +342,7 @@
             <div class="container">
                 <!-- Logo -->
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="https://picsum.photos/40/40?random=2" alt="NashTech TCG Logo" class="logo me-2" onerror="this.src='https://via.placeholder.com/40x40?text=TCG';this.onerror='';">
-                   
+                    <img src="https://picsum.photos/40/40?random=2" alt="TCG Universe Logo" class="logo me-2" onerror="this.src='https://via.placeholder.com/40x40?text=TCG';this.onerror='';">
                 </a>
 
                 <!-- Toggle Button -->
@@ -87,7 +407,7 @@
                                     </a>
                                 </div>
                             </div>
-                            
+
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="ShoppingCart" asp-action="Index">
                                     <i class="bi bi-cart3"></i>
@@ -119,11 +439,11 @@
     </div>
 
     <!-- Redesigned Footer -->
-    <footer class="main-footer bg-dark text-light py-5">
+    <footer class="main-footer py-5 text-light">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <h5 class="footer-heading">NashTech TCG</h5>
+                    <h5 class="footer-heading">TCG Universe</h5>
                     <p class="footer-text">Your premier destination for trading card games. Discover rare cards, build your collection, and connect with other enthusiasts.</p>
                     <div class="social-icons">
                         <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
@@ -156,14 +476,14 @@
                     <h5 class="footer-heading">Contact Us</h5>
                     <address class="footer-contact">
                         <p><i class="bi bi-geo-alt me-2"></i> 123 Card Street, Game City</p>
-                        <p><i class="bi bi-envelope me-2"></i> contact@nashtechTCG.com</p>
+                        <p><i class="bi bi-envelope me-2"></i> contact@tcguniverse.com</p>
                         <p><i class="bi bi-telephone me-2"></i> (123) 456-7890</p>
                     </address>
-                    <div class="newsletter-form">
-                        <p class="small">Subscribe to our newsletter</p>
+                    <div class="newsletter-form mt-3">
+                        <p class="small text-light mb-2">Subscribe to our newsletter</p>
                         <div class="input-group">
                             <input type="email" class="form-control form-control-sm" placeholder="Email address">
-                            <button class="btn btn-primary btn-sm" type="button">Subscribe</button>
+                            <button class="btn btn-sm" type="button">Subscribe</button>
                         </div>
                     </div>
                 </div>
@@ -171,14 +491,14 @@
             <hr class="footer-divider">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="copyright">&copy; @DateTime.Now.Year - NashTech TCG - All Rights Reserved</p>
+                    <p class="copyright">&copy; @DateTime.Now.Year - TCG Universe - All Rights Reserved</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="payment-methods">
-                        <i class="bi bi-credit-card me-2"></i>
-                        <i class="bi bi-paypal me-2"></i>
-                        <i class="bi bi-wallet2 me-2"></i>
-                        <i class="bi bi-bank me-2"></i>
+                        <i class="bi bi-credit-card"></i>
+                        <i class="bi bi-paypal"></i>
+                        <i class="bi bi-wallet2"></i>
+                        <i class="bi bi-bank"></i>
                     </p>
                 </div>
             </div>
@@ -195,210 +515,10 @@
     @await RenderSectionAsync("Scripts", required: false)
     @await RenderSectionAsync("ExtraScripts", required: false)
 
-
-    <style>
-        /* General Styles */
-        body {
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        main {
-            flex: 1;
-        }
-
-        /* Header Styles */
-        .main-header {
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-        }
-
-        .navbar-dark.bg-primary {
-            background: linear-gradient(135deg, #4a47a3, #6a67ce) !important;
-        }
-
-        .logo {
-            height: 40px;
-            width: auto;
-            transition: transform 0.3s;
-        }
-
-        .navbar-brand:hover .logo {
-            transform: scale(1.05);
-        }
-
-        .brand-text {
-            font-weight: 700;
-            font-size: 1.3rem;
-            letter-spacing: 0.5px;
-        }
-
-        /* Navigation Menu Styles */
-        .main-menu .nav-item {
-            position: relative;
-            margin: 0 5px;
-        }
-
-        .main-menu .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 500;
-            padding: 0.5rem 0.8rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-            .main-menu .nav-link:hover,
-            .main-menu .nav-link:focus {
-                color: white;
-                background-color: rgba(255, 255, 255, 0.1);
-                transform: translateY(-2px);
-            }
-
-        /* User Menu Styles */
-        .user-dropdown {
-            color: white !important;
-            background-color: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 6px 15px;
-            transition: all 0.3s ease;
-        }
-
-            .user-dropdown:hover {
-                background-color: rgba(255, 255, 255, 0.25);
-            }
-
-        .user-dropdown-menu {
-            border: none;
-            border-radius: 8px;
-        }
-
-        .dropdown-item {
-            padding: 8px 16px;
-            transition: background-color 0.2s;
-        }
-
-            .dropdown-item:hover {
-                background-color: #f8f9fa;
-            }
-
-        .auth-buttons .btn {
-            border-radius: 20px;
-            padding: 0.375rem 1rem;
-            transition: all 0.3s ease;
-        }
-
-            .auth-buttons .btn:hover {
-                transform: translateY(-2px);
-            }
-
-        /* Footer Styles */
-        .main-footer {
-            background: linear-gradient(135deg, #1a1a2e, #2a2a45);
-            margin-top: 3rem;
-        }
-
-        .footer-heading {
-            position: relative;
-            font-weight: 600;
-            margin-bottom: 1.2rem;
-            padding-bottom: 0.8rem;
-        }
-
-            .footer-heading::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 50px;
-                height: 2px;
-                background-color: #6a67ce;
-            }
-
-        .footer-text {
-            color: #bbb;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-links {
-            list-style: none;
-            padding-left: 0;
-        }
-
-            .footer-links li {
-                margin-bottom: 0.5rem;
-            }
-
-            .footer-links a {
-                color: #ccc;
-                text-decoration: none;
-                transition: all 0.3s ease;
-                display: inline-block;
-            }
-
-                .footer-links a:hover {
-                    color: white;
-                    transform: translateX(3px);
-                }
-
-        .footer-contact p {
-            color: #bbb;
-            margin-bottom: 0.5rem;
-        }
-
-        .social-icons {
-            margin-top: 1.2rem;
-        }
-
-        .social-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            margin-right: 0.5rem;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-            .social-icon:hover {
-                background-color: #6a67ce;
-                transform: translateY(-3px);
-                color: white;
-            }
-
-        .footer-divider {
-            border-color: rgba(255, 255, 255, 0.1);
-            margin: 2rem 0 1rem;
-        }
-
-        .copyright {
-            color: #999;
-            font-size: 0.85rem;
-            margin-bottom: 0;
-        }
-
-        .newsletter-form {
-            margin-top: 1rem;
-        }
-
-        .payment-methods {
-            color: #999;
-            font-size: 1.2rem;
-        }
-    </style>
-    <!-- Add this script at the end of _Layout.cshtml before the closing </body> tag -->
     @if (User.Identity.IsAuthenticated)
     {
         <script>
             $(document).ready(function() {
-                // Function to load cart count on page load
                 function loadCartCount() {
                     $.ajax({
                         url: '@Url.Action("GetCartCount", "ShoppingCart")',
@@ -406,7 +526,6 @@
                         success: function(result) {
                             if (result.success) {
                                 $('#cart-count').text(result.count);
-                                // Make the badge visible if there are items
                                 if (result.count > 0) {
                                     $('#cart-count').show();
                                 } else {
@@ -416,12 +535,9 @@
                         }
                     });
                 }
-
-                // Call the function on page load
                 loadCartCount();
             });
         </script>
     }
-
 </body>
 </html>

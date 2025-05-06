@@ -1,3 +1,17 @@
+:root {
+    --primary: #2e1a47; /* Deep purple - primary brand color */
+    --primary-light: #482a6a; /* Lighter purple for hover states */
+    --secondary: #ff9d00; /* Orange/gold accent for CTAs and highlights */
+    --dark: #121212; /* Near black for dark backgrounds */
+    --light: #f8f5ff; /* Light purple tint for backgrounds */
+    --text-dark: #333333; /* Dark text color */
+    --text-light: #ffffff; /* Light text color */
+    --border-color: #e0d5f0; /* Subtle border color */
+    --success: #35b969; /* Green for success messages */
+    --danger: #e63946; /* Red for errors/alerts */
+}
+
+
 html {
   font-size: 14px;
 }
@@ -60,5 +74,154 @@ html {
     vertical-align: middle;
     padding: 0;
 }
+
+/* Product page specific styles that follow the theme */
+.product-card {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    background-color: var(--text-light);
+}
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-color: var(--secondary);
+    }
+
+.product-image {
+    height: 200px;
+    object-fit: contain;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-title {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.product-price {
+    color: var(--secondary);
+    font-weight: 500;
+}
+
+/* Product details page */
+.product-image-section {
+    background-color: var(--light);
+    position: relative;
+}
+
+.product-main-image {
+    transition: transform 0.3s ease;
+}
+
+    .product-main-image:hover {
+        transform: scale(1.05);
+    }
+
+.price-display {
+    background-color: var(--light);
+    border-left: 4px solid var(--secondary);
+}
+
+#priceDisplay {
+    color: var(--primary);
+}
+
+.product-tags .badge {
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+.quantity-selector .btn {
+    color: var(--primary);
+    border-color: var(--border-color);
+}
+
+    .quantity-selector .btn:hover {
+        background-color: var(--primary);
+        color: var(--text-light);
+    }
+
+.wishlist-btn {
+    color: var(--primary);
+    border-color: var(--border-color);
+    transition: all 0.3s ease;
+}
+
+    .wishlist-btn:hover {
+        background-color: var(--danger);
+        color: var(--text-light);
+        border-color: var(--danger);
+    }
+
+.product-benefits {
+    color: var(--text-dark);
+    opacity: 0.8;
+}
+
+/* Nav tabs styling that matches theme */
+.nav-tabs {
+    border-bottom: 1px solid var(--border-color);
+}
+
+    .nav-tabs .nav-link {
+        color: var(--text-dark);
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            background-color: transparent;
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            border-bottom: 3px solid var(--border-color);
+            background-color: var(--light);
+        }
+
+/* Related products section */
+.section-title {
+    position: relative;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    display: inline-block;
+}
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        width: 50px;
+        height: 3px;
+        background-color: var(--secondary);
+        left: 0;
+        bottom: -8px;
+    }
+
+/* Slick slider arrows for related products */
+.slick-prev, .slick-next {
+    background-color: var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    z-index: 5;
+}
+
+    .slick-prev:hover, .slick-next:hover {
+        background-color: var(--secondary);
+    }
+
 
 

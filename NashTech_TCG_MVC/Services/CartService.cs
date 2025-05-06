@@ -7,160 +7,42 @@ using System.Text;
 
 namespace NashTech_TCG_MVC.Services
 {
-    public class CartService : ICartService
+    public class CartService : BaseHttpService, ICartService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<CartService> _logger;
 
-        public CartService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        public CartService(
+            IHttpClientFactory httpClientFactory,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<CartService> logger = null)
+            : base(httpClientFactory, httpContextAccessor)
         {
-            _httpClientFactory = httpClientFactory;
-            _httpContextAccessor = httpContextAccessor;
-        }
-
-        private async Task<HttpClient> CreateClientWithAuthAsync()
-        {
-            var client = _httpClientFactory.CreateClient("API");
-
-            // Add authorization token if available
-            var token = _httpContextAccessor.HttpContext.Session.GetString("AccessToken");
-            if (!string.IsNullOrEmpty(token))
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
-
-            return client;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string Message, CartViewModel Data)> GetCartAsync()
         {
-            try
-            {
-                var client = await CreateClientWithAuthAsync();
-                var response = await client.GetAsync("api/Cart");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, $"Failed to retrieve cart: {errorContent}", null);
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<CartViewModel>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return (true, result?.Message ?? "Cart retrieved successfully", result?.Data);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"An error occurred: {ex.Message}", null);
-            }
+            return await GetAsync<CartViewModel>("api/Cart", _logger);
         }
 
         public async Task<(bool Success, string Message, CartItemViewModel Data)> AddToCartAsync(AddToCartViewModel model)
         {
-            try
-            {
-                var client = await CreateClientWithAuthAsync();
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync("api/Cart/items", content);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, $"Failed to add item to cart: {errorContent}", null);
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<CartItemViewModel>>(responseContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return (true, result?.Message ?? "Item added to cart successfully", result?.Data);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"An error occurred: {ex.Message}", null);
-            }
+            return await PostAsync<CartItemViewModel>("api/Cart/items", model, _logger);
         }
 
         public async Task<(bool Success, string Message, CartItemViewModel Data)> UpdateCartItemAsync(UpdateCartItemViewModel model)
         {
-            try
-            {
-                var client = await CreateClientWithAuthAsync();
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PutAsync("api/Cart/items", content);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, $"Failed to update cart item: {errorContent}", null);
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<CartItemViewModel>>(responseContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return (true, result?.Message ?? "Cart item updated successfully", result?.Data);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"An error occurred: {ex.Message}", null);
-            }
+            return await PutAsync<CartItemViewModel>("api/Cart/items", model, _logger);
         }
 
         public async Task<(bool Success, string Message)> RemoveCartItemAsync(string cartItemId)
         {
-            try
-            {
-                var client = await CreateClientWithAuthAsync();
-                var response = await client.DeleteAsync($"api/Cart/items/{cartItemId}");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, $"Failed to remove cart item: {errorContent}");
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<object>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return (true, result?.Message ?? "Cart item removed successfully");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"An error occurred: {ex.Message}");
-            }
+            return await DeleteAsync($"api/Cart/items/{cartItemId}", _logger);
         }
 
         public async Task<(bool Success, string Message)> ClearCartAsync()
         {
-            try
-            {
-                var client = await CreateClientWithAuthAsync();
-                var response = await client.DeleteAsync("api/Cart");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, $"Failed to clear cart: {errorContent}");
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<object>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return (true, result?.Message ?? "Cart cleared successfully");
-            }
-            catch (Exception ex)
-            {
-                return (false, $"An error occurred: {ex.Message}");
-            }
+            return await DeleteAsync("api/Cart", _logger);
         }
     }
 }

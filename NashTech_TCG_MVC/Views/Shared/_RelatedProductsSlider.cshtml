@@ -11,34 +11,34 @@
             @foreach (var product in Model)
             {
                 <div class="px-2">
-                    <div class="card h-100 shadow-hover border-light mb-2">
+                    <div class="card h-100 product-card mb-2">
                         <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="text-decoration-none">
                             <div class="position-relative">
                                 @if (!string.IsNullOrEmpty(product.ImageUrl))
                                 {
-                                    <img src="@product.ImageUrl" class="card-img-top p-3" style="height: 180px; object-fit: contain;" alt="@product.Name">
+                                    <img src="@product.ImageUrl" class="card-img-top p-3 product-image" alt="@product.Name">
                                 }
                                 else
                                 {
-                                    <img src="/images/placeholder.png" class="card-img-top p-3" style="height: 180px; object-fit: contain;" alt="No Image">
+                                    <img src="/images/placeholder.png" class="card-img-top p-3 product-image" alt="No Image">
                                 }
 
                                 @if (product.AverageRating > 0)
                                 {
                                     <!-- Rating badge -->
                                     <div class="position-absolute top-0 end-0 p-2">
-                                        <span class="badge bg-primary rounded-pill px-2 py-1">
+                                        <span class="badge rounded-pill px-2 py-1" style="background-color: var(--secondary);">
                                             <i class="bi bi-star-fill me-1"></i> @product.AverageRating.ToString("0.0")
                                         </span>
                                     </div>
                                 }
                             </div>
                             <div class="card-body pb-4">
-                                <h6 class="card-title text-truncate fw-bold">@product.Name</h6>
+                                <h6 class="card-title text-truncate fw-bold product-title">@product.Name</h6>
                                 <p class="card-text small text-truncate text-muted mb-2">@product.CategoryName</p>
                                 @if (!string.IsNullOrEmpty(product.PriceRange))
                                 {
-                                    <p class="card-text fw-bold text-primary mb-0">@product.PriceRange</p>
+                                    <p class="card-text fw-bold product-price mb-0">@product.PriceRange</p>
                                 }
                             </div>
                         </a>
@@ -49,7 +49,7 @@
     }
 </div>
 
-@* Add shared JS code for Slick initialization *@
+@* Slick slider initialization script *@
 <script>
     $(document).ready(function() {
         if (typeof $.fn.slick !== 'undefined' && $('.product-slider').length > 0) {
@@ -82,37 +82,53 @@
             });
         }
     });
-
-    // Add Bootstrap hover effects with JS instead of CSS
-    $(document).ready(function() {
-        $('.shadow-hover').hover(
-            function() {
-                $(this).addClass('shadow').css({
-                    'transform': 'translateY(-5px)',
-                    'transition': 'transform 0.2s ease, box-shadow 0.2s ease'
-                });
-            },
-            function() {
-                $(this).removeClass('shadow').css({
-                    'transform': 'translateY(0)',
-                    'transition': 'transform 0.2s ease, box-shadow 0.2s ease'
-                });
-            }
-        );
-    });
 </script>
 
 @* Add minimal required styling for slick arrows that cannot be handled by Bootstrap classes *@
 <style>
-    /* Required styling for Slick arrows - minimized to only what's necessary */
+    /* Product card styles to match the main design */
+    .product-card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid var(--border-color);
+        background-color: var(--text-light);
+    }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--secondary);
+        }
+
+    .product-image {
+        height: 180px;
+        object-fit: contain;
+        transition: all 0.5s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .product-title {
+        color: var(--primary);
+    }
+
+    .product-price {
+        color: var(--secondary);
+    }
+
+    /* Required styling for Slick arrows - using theme colors */
     .product-slider .slick-prev,
     .product-slider .slick-next {
         width: 40px;
         height: 40px;
-        background: white;
+        background-color: var(--primary);
         border-radius: 50%;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-        z-index: 1;
+        z-index: 5;
     }
 
     .product-slider .slick-prev {
@@ -123,8 +139,13 @@
         right: -15px;
     }
 
+        .product-slider .slick-prev:hover,
+        .product-slider .slick-next:hover {
+            background-color: var(--secondary);
+        }
+
         .product-slider .slick-prev:before,
         .product-slider .slick-next:before {
-            color: #4a47a3;
+            color: var(--text-light);
         }
 </style>

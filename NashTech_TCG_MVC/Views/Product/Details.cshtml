@@ -4,6 +4,90 @@
     ViewData["Title"] = Model.Name;
     var formatPrice = ViewBag.FormatPrice as Func<decimal, string> ?? (price => price.ToString("N0"));
 }
+<!-- Add this style block to the top of Details.cshtml -->
+<style>
+    /* Use theme colors from site.css */
+    .text-primary {
+        color: var(--primary) !important;
+    }
+    
+    .text-secondary {
+        color: var(--secondary) !important;
+    }
+    
+    .bg-secondary {
+        background-color: var(--secondary) !important;
+    }
+    
+    .bg-primary {
+        background-color: var(--primary) !important;
+    }
+    
+    .spinner-border.text-primary {
+        color: var(--primary) !important;
+    }
+    
+    .price-display {
+        background-color: var(--light);
+        border-left: 4px solid var(--secondary);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+        background-color: var(--primary-light);
+        border-color: var(--primary-light);
+    }
+    
+    .btn-secondary {
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+        color: var(--dark);
+    }
+    
+    .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active {
+        background-color: var(--secondary);
+        filter: brightness(110%);
+        color: var(--dark);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: var(--text-light);
+    }
+    
+    /* Product details specific styling */
+    #priceDisplay {
+        color: var(--secondary);
+        font-weight: 700;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--primary);
+        border-bottom: 3px solid var(--secondary);
+    }
+    
+    .section-title {
+        color: var(--primary);
+    }
+    
+    .section-title::after {
+        background-color: var(--secondary);
+    }
+    
+    .product-image-section {
+        background-color: var(--light);
+    }
+</style>
 
 <!-- Toast container for notifications -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
@@ -37,7 +121,7 @@
 <!-- Breadcrumb navigation -->
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
+        <ol class="breadcrumb bg-light p-3 rounded-3">
             <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
             <li class="breadcrumb-item"><a href="@Url.Action("Index", "Product")">Products</a></li>
             <li class="breadcrumb-item"><a href="@Url.Action("Index", "Product", new { categoryId = Model.CategoryId })">@Model.CategoryName</a></li>
@@ -51,10 +135,9 @@
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
         <div class="row g-0">
             <!-- Product Image Section -->
-            <div class="col-lg-6 bg-light position-relative">
-
+            <div class="col-lg-6 bg-light position-relative product-image-section">
                 <div class="position-absolute top-0 end-0 m-3">
-                    <span class="badge bg-primary p-2 rounded-pill">
+                    <span class="badge bg-secondary p-2 rounded-pill">
                         <i class="bi bi-award-fill me-1"></i>TCG Exclusive
                     </span>
                 </div>
@@ -62,12 +145,12 @@
                 <div class="d-flex align-items-center justify-content-center h-100 p-4">
                     @if (!string.IsNullOrEmpty(Model.ImageUrl))
                     {
-                        <img src="@Model.ImageUrl" class="img-fluid" style="max-height: 400px; cursor: pointer;"
+                        <img src="@Model.ImageUrl" class="img-fluid product-main-image" style="max-height: 400px; cursor: pointer;"
                              alt="@Model.Name" data-bs-toggle="modal" data-bs-target="#imageModal">
                     }
                     else
                     {
-                        <img src="/images/placeholder.png" class="img-fluid" style="max-height: 400px; cursor: pointer;"
+                        <img src="/images/placeholder.png" class="img-fluid product-main-image" style="max-height: 400px; cursor: pointer;"
                              alt="@Model.Name" data-bs-toggle="modal" data-bs-target="#imageModal">
                     }
                 </div>
@@ -77,13 +160,13 @@
             <div class="col-lg-6">
                 <div class="p-4 p-lg-5">
                     <div class="d-flex justify-content-between align-items-start">
-                        <h1 class="fw-bold mb-2">@Model.Name</h1>
-                        <button class="btn btn-outline-danger btn-sm rounded-circle" title="Add to wishlist">
+                        <h1 class="fw-bold mb-2 text-primary">@Model.Name</h1>
+                        <button class="btn btn-outline-secondary btn-sm rounded-circle wishlist-btn" title="Add to wishlist">
                             <i class="bi bi-heart"></i>
                         </button>
                     </div>
 
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center mb-3 product-tags">
                         <span class="badge bg-light text-dark me-2">
                             <i class="bi bi-tag-fill me-1"></i>@Model.CategoryName
                         </span>
@@ -115,8 +198,8 @@
                         </div>
                     </div>
 
-                    <div class="p-3 rounded-3 bg-light mb-4">
-                        <h3 id="priceDisplay" class="fw-bold text-primary mb-0">@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")</h3>
+                    <div class="p-3 rounded-3 price-display mb-4">
+                        <h3 id="priceDisplay" class="fw-bold mb-0">@Model.PriceRange.Replace("$", "").Replace(".", ",").Replace(",", ".")</h3>
                     </div>
 
                     @if (Model.Variants.Any())
@@ -165,7 +248,7 @@
                             <label for="quantity" class="form-label fw-bold">
                                 <i class="bi bi-123 me-2"></i>Quantity:
                             </label>
-                            <div class="input-group" style="max-width: 180px;">
+                            <div class="input-group quantity-selector" style="max-width: 180px;">
                                 <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
                                         style="width: 40px;" type="button" id="decreaseQty">
                                     <i class="bi bi-dash"></i>
@@ -182,12 +265,12 @@
                             <button type="button" id="addToCartBtn" class="btn btn-primary btn-lg">
                                 <i class="bi bi-cart-plus me-2"></i>Add to Cart
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-lg">
+                            <button type="button" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-lightning-fill me-2"></i>Buy Now
                             </button>
                         </div>
 
-                        <div class="mt-4">
+                        <div class="mt-4 product-benefits">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-truck text-success me-2 fs-5"></i>
                                 <span>Free shipping on orders over 150.000đ</span>
@@ -212,7 +295,7 @@
 
     <!-- Product Information Tabs -->
     <div class="mb-5">
-        <ul class="nav nav-tabs border-0" id="productInfoTabs" role="tablist">
+        <ul class="nav nav-tabs" id="productInfoTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold" id="description-tab" data-bs-toggle="tab"
                         data-bs-target="#description-tab-pane" type="button" role="tab" aria-selected="true">
@@ -229,7 +312,7 @@
                 <button class="nav-link fw-bold" id="reviews-tab" data-bs-toggle="tab"
                         data-bs-target="#reviews-tab-pane" type="button" role="tab" aria-selected="false">
                     <i class="bi bi-star me-2"></i>Reviews
-                    <span class="badge bg-primary ms-1">@Model.RatingCount</span>
+                    <span class="badge bg-secondary ms-1">@Model.RatingCount</span>
                 </button>
             </li>
         </ul>
@@ -254,7 +337,7 @@
     <!-- Related Products Section -->
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold">Related Products</h3>
+            <h3 class="fw-bold text-primary section-title">Related Products</h3>
             <a href="@Url.Action("Index", "Product", new { categoryId = Model.CategoryId })" class="btn btn-outline-primary">
                 View All <i class="bi bi-arrow-right ms-1"></i>
             </a>
@@ -655,10 +738,7 @@
                                         }
                                     ]
                                 });
-                                console.log('Related products slider initialized');
                             }
-                        } else {
-                            console.error('Slick carousel plugin is not loaded');
                         }
                     },
                     error: function(error) {

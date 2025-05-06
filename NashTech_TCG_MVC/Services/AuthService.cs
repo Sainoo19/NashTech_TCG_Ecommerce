@@ -7,51 +7,55 @@ using NashTech_TCG_MVC.Services.Interfaces;
 
 namespace NashTech_TCG_MVC.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService : BaseHttpService, IAuthService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public AuthService(
+            IHttpClientFactory httpClientFactory,
+            IHttpContextAccessor httpContextAccessor,
+            IConfiguration configuration,
+            ILogger<AuthService> logger = null)
+            : base(httpClientFactory, httpContextAccessor)
         {
-            _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string Message, string Token)> LoginAsync(LoginViewModel model)
         {
             try
             {
-                // Tạo HTTP client để gọi API
                 var client = _httpClientFactory.CreateClient("API");
 
-                // Chuẩn bị form data cho OpenIddict token endpoint
+                // Prepare form data for OpenIddict token endpoint
                 var formData = new Dictionary<string, string>
                 {
                     { "grant_type", "password" },
                     { "username", model.Email },
                     { "password", model.Password },
                     { "scope", " offline_access api roles email " },
-                    
                 };
 
-                // Gửi yêu cầu POST để lấy token
+                // Send POST request to get token
                 var content = new FormUrlEncodedContent(formData);
                 var response = await client.PostAsync("api/Auth/token", content);
 
-                // Xử lý phản hồi
+                // Handle response
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     return (false, $"Login failed: {errorContent}", null);
                 }
 
-                // Phân tích phản hồi thành công
+                // Parse successful response
                 var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 return (true, "Login successful", tokenResponse?.AccessToken);
             }
             catch (Exception ex)
             {
+                _logger?.LogError(ex, "Error during login");
                 return (false, $"An error occurred: {ex.Message}", null);
             }
         }
@@ -60,30 +64,22 @@ namespace NashTech_TCG_MVC.Services
         {
             try
             {
-                // Tạo HTTP client để gọi API
                 var client = _httpClientFactory.CreateClient("API");
 
-                // In ra thông tin để gỡ lỗi
-                Console.WriteLine($"Sending registration request to: {client.BaseAddress}api/Auth/register");
-                Console.WriteLine($"Request data: Email={model.Email}, FirstName={model.FirstName}, LastName={model.LastName}");
-
-                // Serialize model thành JSON
-                var options = new JsonSerializerOptions
+                // Serialize model to JSON
+                var json = JsonSerializer.Serialize(model, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     WriteIndented = true
-                };
-                var json = JsonSerializer.Serialize(model, options);
+                });
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-                // Gửi yêu cầu POST để đăng ký
+                // Send POST request for registration
+                _logger?.LogInformation($"Sending registration request for email: {model.Email}");
                 var response = await client.PostAsync("api/Auth/register", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                // In ra phản hồi để gỡ lỗi
-                Console.WriteLine($"Registration response: {responseContent}");
-
-                // Phân tích phản hồi
+                // Parse response
                 ApiResponse<object> result;
                 try
                 {
@@ -92,98 +88,82 @@ namespace NashTech_TCG_MVC.Services
                 }
                 catch (Exception ex)
                 {
-                    return (false, $"Failed to parse response: {ex.Message}. Raw response: {responseContent}");
+                    _logger?.LogError(ex, "Failed to parse registration response");
+                    return (false, $"Failed to parse response: {ex.Message}");
                 }
 
-                // Kiểm tra trạng thái phản hồi
+                // Check response status
                 if (!response.IsSuccessStatusCode)
                 {
-                    return (false, result?.Message ?? $"Registration failed with status code {response.StatusCode}. Response: {responseContent}");
+                    return (false, result?.Message ?? $"Registration failed with status code {response.StatusCode}");
                 }
 
                 return (true, "Registration successful");
             }
             catch (Exception ex)
             {
+                _logger?.LogError(ex, "Error during registration");
                 return (false, $"An error occurred: {ex.Message}");
             }
         }
 
-        public async Task<ClaimsPrincipal> ValidateTokenAsync(string token)
+        public Task<ClaimsPrincipal> ValidateTokenAsync(string token)
         {
             try
             {
-                // Phân tích JWT token để lấy claim
+                // Parse JWT token to get claims
                 var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
                 var claims = jwtToken.Claims.ToList();
 
-                // Tạo ClaimsIdentity từ các claim đã lấy được
+                // Create ClaimsIdentity from retrieved claims
                 var identity = new ClaimsIdentity(claims, "jwt");
-                return new ClaimsPrincipal(identity);
+                return Task.FromResult(new ClaimsPrincipal(identity));
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                _logger?.LogError(ex, "Error validating token");
+                return Task.FromResult<ClaimsPrincipal>(null);
             }
         }
 
         public async Task<List<string>> GetUserRolesAsync(string token)
         {
-            try
-            {
-                // Tạo HTTP client để gọi API
-                var client = _httpClientFactory.CreateClient("API");
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _httpClientFactory.CreateClient("API");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                // Gửi yêu cầu GET để lấy vai trò
-                var response = await client.GetAsync("api/Auth/roles");
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new List<string>();
-                }
-
-                // Phân tích phản hồi
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<RolesResponse>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return result?.Data?.Roles?.ToList() ?? new List<string>();
-            }
-            catch
+            var response = await client.GetAsync("api/Auth/roles");
+            if (!response.IsSuccessStatusCode)
             {
                 return new List<string>();
             }
+
+            // Parse response
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ApiResponse<RolesResponse>>(content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return result?.Data?.Roles?.ToList() ?? new List<string>();
         }
 
         public async Task<UserProfileViewModel> GetUserProfileAsync(string token)
         {
-            try
+            var client = _httpClientFactory.CreateClient("API");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.GetAsync("api/Auth/profile");
+            if (!response.IsSuccessStatusCode)
             {
-                // Tạo HTTP client để gọi API
-                var client = _httpClientFactory.CreateClient("API");
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                // Gửi yêu cầu GET để lấy thông tin người dùng
-                var response = await client.GetAsync("api/Auth/profile");
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                // Phân tích phản hồi
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ApiResponse<UserProfileViewModel>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                return result?.Data;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting user profile: {ex.Message}");
                 return null;
             }
+
+            // Parse response
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ApiResponse<UserProfileViewModel>>(content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return result?.Data;
         }
     }
 }

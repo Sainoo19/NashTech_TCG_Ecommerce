@@ -9,7 +9,7 @@
         <!-- Left sidebar - Filter panel with collapsible sections on mobile -->
         <div class="col-lg-3">
             <div class="card shadow-sm border-0 rounded-3 mb-4">
-                <div class="card-header text-white py-3 rounded-top" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                <div class="card-header py-3 rounded-top text-white filter-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-funnel me-2"></i>Filters</h5>
                         <button class="btn btn-sm btn-light d-lg-none" type="button" data-bs-toggle="collapse"
@@ -104,9 +104,9 @@
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-body">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4">
-                        <h2 class="fw-bold mb-3 mb-sm-0"><i class="bi bi-grid-3x3-gap me-2"></i>Products</h2>
+                        <h2 class="fw-bold mb-3 mb-sm-0 product-heading"><i class="bi bi-grid-3x3-gap me-2"></i>Products</h2>
                         <div class="bg-light py-2 px-3 rounded-pill d-flex align-items-center">
-                            <i class="bi bi-info-circle me-2 text-primary"></i>
+                            <i class="bi bi-info-circle me-2 text-secondary"></i>
                             <span>
                                 Showing @(((Model.CurrentPage - 1) * Model.PageSize) + 1) to
                                 @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) of @Model.TotalCount results
@@ -125,30 +125,48 @@
 </div>
 
 <style>
-    /* Product card styling */
-    .product-image {
-        height: 200px;
-        object-fit: contain;
-        padding: 1rem;
+    /* Use theme colors from site.css */
+    .filter-header {
+        background: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
     }
 
-    .product-card {
-        border-radius: 0.75rem;
-        overflow: hidden;
-        border: 0;
-        transition: all 0.3s ease;
+    .product-heading {
+        color: var(--primary);
     }
 
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    /* Override Bootstrap's primary color with our theme */
+    .btn-primary, .btn-outline-primary {
+        border-color: var(--primary);
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+    }
+
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
         }
 
-            .product-card:hover .product-image {
-                transform: scale(1.05);
-            }
+    .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active,
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: var(--text-light);
+    }
 
+    .text-primary {
+        color: var(--primary) !important;
+    }
 
+    .text-secondary {
+        color: var(--secondary) !important;
+    }
+
+    .spinner-grow.text-primary {
+        color: var(--primary) !important;
+    }
 </style>
 
 @section Scripts {
@@ -254,14 +272,6 @@
 
             // Add tooltip initialization
             $('[data-bs-toggle="tooltip"]').tooltip();
-
-            // Make cards clickable
-            $('.product-card').on('click', function() {
-                const url = $(this).find('a').attr('href');
-                if (url) {
-                    window.location = url;
-                }
-            });
         });
     </script>
 }

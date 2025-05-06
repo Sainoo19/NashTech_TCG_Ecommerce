@@ -184,88 +184,238 @@
 }
 
 <style>
-    /* Make the carousel container full width */
-    #bannerCarousel {
-        margin-left: calc(-1 * (100vw - 100%) / 2);
-        margin-right: calc(-1 * (100vw - 100%) / 2);
-        width: 100vw;
-        max-width: none;
+    /* Home Page Specific Styles */
+    .carousel-item {
+        position: relative;
+        height: 500px;
     }
 
-    /* Make the carousel images taller */
-    .carousel-item img {
-        height: 450px;
-        object-fit: cover;
+        .carousel-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(46, 26, 71, 0.6), rgba(0, 0, 0, 0.8));
+        }
+
+        .carousel-item img {
+            height: 500px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+    .carousel-caption {
+        z-index: 10;
+        top: 50%;
+        transform: translateY(-50%);
+        bottom: auto;
     }
 
-    /* Style for the welcome text */
-    .text-shadow {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        font-weight: bold;
-        background-color: rgba(0, 0, 0, 0.3);
-        padding: 10px 20px;
-        border-radius: 5px;
+        .carousel-caption h5 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            margin-bottom: 1rem;
+        }
+
+        .carousel-caption p {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+        }
+
+    .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
     }
 
-    /* Center the category buttons and add top margin */
-    .category-buttons-wrapper {
-        display: flex;
-        justify-content: center; /* Center horizontally */
-        margin-top: 20px; /* Add top margin */
+    .home-welcome-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 15;
+        width: 80%;
     }
 
-    .category-buttons {
-        display: flex;
-        flex-wrap: wrap; /* Allow wrapping if needed */
-        gap: 10px; /* Add spacing between buttons */
-        justify-content: center; /* Center buttons within the wrapper */
+        .home-welcome-overlay h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            margin-bottom: 1rem;
+            color: var(--light);
+        }
+
+        .home-welcome-overlay .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+            .home-welcome-overlay .btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        position: relative;
+        color: var(--primary);
     }
 
-    /* Enhance hover effect for category buttons */
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background-color: var(--secondary);
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
     .category-btn {
-        white-space: nowrap;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        color: #212529;
-        transition: all 0.3s ease, box-shadow 0.3s ease;
-        padding: 10px 20px; /* Add padding for better appearance */
-        border-radius: 5px; /* Add rounded corners */
+        background-color: var(--light);
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 25px;
+        transition: all 0.3s ease;
     }
 
         .category-btn:hover {
-            background-color: #e9ecef;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
+            background-color: var(--primary-light);
+            color: var(--light);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
 
         .category-btn.active {
-            background-color: #4a47a3;
-            color: white;
-            border-color: #4a47a3;
-            box-shadow: 0 4px 6px rgba(74, 71, 163, 0.4); /* Add shadow for active state */
+            background-color: var(--primary);
+            color: var(--light);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-
-    /* Section styles */
-    .section-title {
-        position: relative;
-        display: inline-block;
-        margin-bottom: 30px;
+    .product-card {
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        background-color: var(--text-light);
     }
 
-        .section-title:after {
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 3px;
-            background-color: #4a47a3;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--secondary);
         }
 
-    /* Products container */
-    .top-products-container {
-        min-height: 300px;
+        .product-card .card-img-top {
+            transition: all 0.5s ease;
+        }
+
+        .product-card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+
+        .product-card .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .product-card .card-subtitle {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+    /* Slick slider customizations */
+    .slick-prev, .slick-next {
+        background-color: var(--primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        z-index: 10;
     }
+
+        .slick-prev:hover, .slick-next:hover {
+            background-color: var(--secondary);
+        }
+
+        .slick-prev:before, .slick-next:before {
+            font-size: 20px;
+            opacity: 1;
+        }
+
+    .slick-prev {
+        left: -10px;
+    }
+
+    .slick-next {
+        right: -10px;
+    }
+
+    .slick-dots li button:before {
+        font-size: 12px;
+        color: var(--primary);
+    }
+
+    .slick-dots li.slick-active button:before {
+        color: var(--secondary);
+    }
+
+    /* Call to action section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        padding: 4rem 0;
+        margin: 3rem 0;
+        color: var(--light);
+        text-align: center;
+        border-radius: 10px;
+    }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-section .btn {
+            background-color: var(--secondary);
+            color: var(--dark);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+
+            .cta-section .btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                background-color: var(--secondary);
+                filter: brightness(110%);
+            }
+
 </style>

@@ -24,7 +24,7 @@ namespace NashTech_TCG_UnitTest.Services
         private readonly Mock<IRarityRepository> _mockRarityRepository;
         private readonly Mock<IProductRatingRepository> _mockProductRatingRepository;
         private readonly Mock<IOrderRepository> _mockOrderRepository;
-        private readonly Mock<IIdGenerator> _mockIdGenerator; // Changed from IdGenerator to IIdGenerator
+        private readonly Mock<IIdGenerator> _mockIdGenerator; 
         private readonly Mock<ILogger<ProductService>> _mockLogger;
         private readonly Mock<IFirebaseStorageService> _mockFirebaseStorage;
         private readonly ProductService _productService;
@@ -38,7 +38,7 @@ namespace NashTech_TCG_UnitTest.Services
             _mockRarityRepository = new Mock<IRarityRepository>();
             _mockProductRatingRepository = new Mock<IProductRatingRepository>();
             _mockOrderRepository = new Mock<IOrderRepository>();
-            _mockIdGenerator = new Mock<IIdGenerator>(); // Changed from IdGenerator to IIdGenerator
+            _mockIdGenerator = new Mock<IIdGenerator>(); 
             _mockLogger = new Mock<ILogger<ProductService>>();
             _mockFirebaseStorage = new Mock<IFirebaseStorageService>();
 
